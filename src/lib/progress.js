@@ -37,6 +37,24 @@ export function saveProgress(progress) {
   }
 }
 
+export function exportProgressFile(progress) {
+  const blob = new Blob([JSON.stringify(progress, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `trilha-do-aprovado-${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+export async function importProgressFile(file) {
+  const data = JSON.parse(await file.text());
+  if (!data || typeof data !== "object" || typeof data.level !== "number" || typeof data.xp !== "number") {
+    throw new Error("Tệp không hợp lệ");
+  }
+  saveProgress({ ...DEFAULT_PROGRESS, ...data });
+}
+
 export const xpMaxFor = (level) => 100 + (level - 1) * 40;
 
 const addUnique = (arr, item) => (arr.includes(item) ? arr : [...arr, item]);
