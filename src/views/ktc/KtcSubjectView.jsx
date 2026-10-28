@@ -1,16 +1,17 @@
 import { useEffect, useState } from "react";
-import { BookOpen, ChevronDown, ChevronRight, KeyRound, Layers, RotateCcw, ListTree, FileImage } from "lucide-react";
+import { BookOpen, ChevronDown, ChevronRight, KeyRound, Layers, RotateCcw, ListTree, FileImage, FileText, PlayCircle } from "lucide-react";
 import { COLORS, displayFont, monoFont } from "../../theme.js";
 import { iconBoxStyle, subjectCardStyle, darkPanelStyle } from "../../styles.js";
 import { ProgressBar } from "../../components/ui.jsx";
 import { ktcQuestionTotal, priorityStars } from "../../data/ktc/vanBan.js";
-import { ROUND_SIZE, cardsOf, countWrong, docStats, loadBank, sectionsOf } from "../../lib/ktcBank.js";
+import { ROUND_SIZE, cardsOf, countWrong, docStats, hasGoc, loadBank, sectionsOf } from "../../lib/ktcBank.js";
 
 // Tela de um văn bản: trọng tâm, estatística e os modos de estudo.
 export default function KtcSubjectView({ doc, progress, onStart }) {
   const [items, setItems] = useState(null);
   const [showFocus, setShowFocus] = useState(false);
   const [showSections, setShowSections] = useState(false);
+  const [showVideo, setShowVideo] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -53,6 +54,19 @@ export default function KtcSubjectView({ doc, progress, onStart }) {
         </ul>
       )}
 
+      {doc.video && (
+        <>
+          <ModeCard icon={PlayCircle} title="Video giảng giải" sub={`${doc.video.length} · giọng Nhật Phong · xem trước khi đọc văn bản`} onClick={() => setShowVideo((v) => !v)} open={showVideo} />
+          {showVideo && (
+            <div style={{ ...darkPanelStyle, margin: "-4px 0 14px", padding: 10 }}>
+              <video controls preload="metadata" src={`${import.meta.env.BASE_URL}materials/${doc.video.file}`} style={{ width: "100%", aspectRatio: "16 / 9", borderRadius: 8, background: "#000", display: "block" }} />
+            </div>
+          )}
+        </>
+      )}
+      {hasGoc(doc.id) && (
+        <ModeCard icon={FileText} title="Văn bản gốc" sub="Toàn văn · mục lục theo chương, điều · tìm kiếm" onClick={() => onStart({ kind: "goc" })} />
+      )}
       {doc.keyFiles.length > 0 && (
         <ModeCard icon={FileImage} title="Tóm tắt KEY" sub={`${keyPageCount} trang · ${doc.keyFiles.length} tài liệu`} onClick={() => onStart({ kind: "key" })} />
       )}

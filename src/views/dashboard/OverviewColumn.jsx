@@ -4,10 +4,10 @@ import { lightBtnStyle, lightCardBlock } from "../../styles.js";
 import { CheckMark, ProgressBar, RingStat } from "../../components/ui.jsx";
 import { KTC_TOTAL_QUESTIONS } from "../../data/ktc/vanBan.js";
 import { countSeen } from "../../lib/ktcBank.js";
-import { DAILY_MISSIONS } from "../../data/missions.js";
+import { DAILY_MISSIONS, MISSIONS_FOR_STREAK } from "../../data/missions.js";
 import { STUDY_PLAN } from "../../data/studyPlan.js";
 import { fullCountdown, last7Days } from "../../lib/dates.js";
-import { allMissionsDone, missionBonus, missionValue, rolloverMissions, xpMaxFor } from "../../lib/progress.js";
+import { doneMissions, isMissionDone, missionValue, pendingMissionReward, rolloverMissions, xpMaxFor } from "../../lib/progress.js";
 import { planSummary } from "../../lib/studyPlan.js";
 import { useTicker } from "../../hooks/useTicker.js";
 
@@ -52,7 +52,7 @@ function PlanCard({ progress, onClick }) {
 function CountdownCard({ progress, missionProgress, onClick }) {
   useTicker();
   const countdown = fullCountdown(progress.examDate, progress.examTime);
-  const missionsDone = DAILY_MISSIONS.filter((m) => missionValue(missionProgress, m) >= m.target).length;
+  const missionsDone = doneMissions(missionProgress).length;
   return (
     <button onClick={onClick} style={cardButton}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: countdown ? 10 : 0 }}>
@@ -102,10 +102,12 @@ function ActivityCard({ dailyXp }) {
 
 // Nhiệm vụ hôm nay
 function MissionsCard({ missionProgress, missionStreak, onClaim }) {
-  const allDone = allMissionsDone(missionProgress);
+  const doneCount = doneMissions(missionProgress).length;
+  const { pending, xp: pendingXp, reachesStreak } = pendingMissionReward(missionProgress, missionStreak);
+  const streakLeft = Math.max(0, MISSIONS_FOR_STREAK - doneCount);
   return (
     <div style={lightCardBlock}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <Target size={14} color={LIGHT.teal} />
           <span style={{ ...displayFont, fontWeight: 600, fontSize: 15 }}>Nhiệm vụ hôm nay</span>
@@ -114,27 +116,34 @@ function MissionsCard({ missionProgress, missionStreak, onClaim }) {
           <Flame size={12} color={LIGHT.gold} /> {missionStreak}
         </div>
       </div>
+      <div style={{ fontSize: 12.5, color: LIGHT.muted, marginBottom: 6 }}>{doneCount}/{DAILY_MISSIONS.length} hoàn thành</div>
+      <ProgressBar pct={(doneCount / DAILY_MISSIONS.length) * 100} height={5} fill={LIGHT_GRADIENT} style={{ marginBottom: 12 }} />
       {DAILY_MISSIONS.map((m) => {
         const val = missionValue(missionProgress, m);
-        const done = val >= m.target;
+        const done = isMissionDone(missionProgress, m);
+        const claimed = missionProgress.claimedIds.includes(m.id);
         return (
           <div key={m.id} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, fontSize: 14, color: done ? LIGHT.text : LIGHT.muted }}>
             <CheckMark done={done} size={14} />
-            <span style={{ flex: 1 }}>{m.label}</span>
+            <span style={{ flex: 1, textDecoration: claimed ? "line-through" : "none" }}>{m.label}</span>
             <span style={{ ...monoFont, fontSize: 12 }}>{Math.min(val, m.target)}/{m.target}</span>
+            <span style={{ ...monoFont, fontSize: 11.5, color: LIGHT.gold, minWidth: 38, textAlign: "right" }}>+{m.xp}</span>
           </div>
         );
       })}
-      {allDone && !missionProgress.claimed && (
+      {pending.length > 0 && (
         <button onClick={onClaim} style={{ ...lightBtnStyle(LIGHT.gold), marginTop: 6 }}>
-          Nhận thưởng (+{missionBonus(missionStreak)} XP)
+          Nhận thưởng (+{pendingXp} XP{reachesStreak ? " · có thưởng chuỗi 🔥" : ""})
         </button>
       )}
-      {allDone && missionProgress.claimed && (
-        <div style={{ textAlign: "center", fontSize: 12.5, color: LIGHT.teal, marginTop: 6 }}>Đã nhận thưởng hôm nay ✓</div>
+      {pending.length === 0 && missionProgress.streakCounted && (
+        <div style={{ textAlign: "center", fontSize: 12.5, color: LIGHT.teal, marginTop: 6 }}>Đã giữ chuỗi hôm nay ✓</div>
       )}
       <div style={{ fontSize: 11.5, color: LIGHT.muted, marginTop: 10, lineHeight: 1.5 }}>
-        Bỏ lỡ nhiệm vụ chỉ làm mất chuỗi thưởng 🔥 — không mất XP hay cấp độ đã có.
+        {missionProgress.streakCounted
+          ? "Làm thêm nhiệm vụ để nhận thêm XP."
+          : `Hoàn thành ${MISSIONS_FOR_STREAK}/${DAILY_MISSIONS.length} nhiệm vụ để giữ chuỗi 🔥${streakLeft ? ` (còn ${streakLeft})` : ""}.`}{" "}
+        Bỏ lỡ chỉ làm mất chuỗi thưởng, không mất XP hay cấp độ.
       </div>
     </div>
   );

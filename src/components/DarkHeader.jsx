@@ -24,7 +24,7 @@ export default function DarkHeader({ progress }) {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{ width: 30, height: 30, borderRadius: "50%", background: COLORS.gold, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <Trophy size={15} color={COLORS.bg} />
+              <Trophy size={15} color="#fff" />
             </div>
             <span style={{ ...displayFont, fontWeight: 600, fontSize: 17 }}>Cấp {progress.level}</span>
           </div>

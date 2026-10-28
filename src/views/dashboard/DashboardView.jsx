@@ -7,6 +7,7 @@ import { DECK_SUBJECTS, WRITING_SUBJECT } from "../../data/subjects.js";
 import { KTC_DOCS, KTC_MOCK_ID } from "../../data/ktc/vanBan.js";
 import OverviewColumn from "./OverviewColumn.jsx";
 import SubjectsColumn from "./SubjectsColumn.jsx";
+import AchievementsBoard from "./AchievementsBoard.jsx";
 
 const SEARCHABLE_SUBJECTS = [...KTC_DOCS, ...DECK_SUBJECTS, WRITING_SUBJECT];
 
@@ -45,10 +46,13 @@ export default function DashboardView({ progress, actions }) {
       {query ? (
         <SearchResults query={searchQuery} results={SEARCHABLE_SUBJECTS.filter((s) => `${s.name} ${s.ref}`.toLowerCase().includes(query))} onOpen={openSubject} />
       ) : (
+        <>
+        <AchievementsBoard progress={progress} />
         <div className="tda-dash-grid">
           <OverviewColumn progress={progress} actions={actions} />
           <SubjectsColumn progress={progress} actions={actions} />
         </div>
+        </>
       )}
     </div>
   );

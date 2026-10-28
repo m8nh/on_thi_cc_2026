@@ -138,3 +138,22 @@ export async function buildMockExam() {
   const picked = banks.flatMap((items, i) => shuffle(items.filter((it) => it.t === "m")).slice(0, quotas[i]));
   return shuffle(picked);
 }
+
+/* ---------- Văn bản gốc (toàn văn luật, nghị định) ----------
+   Um JSON por văn bản: [{ id, label, level (0 mở đầu · 1 chương/phần · 2 mục · 3 điều), html }].
+   Văn bản quy phạm pháp luật không được bảo hộ quyền tác giả, nên ficam no git. */
+const GOC_LOADERS = import.meta.glob("../data/ktc/goc/*.json", { import: "default" });
+const gocCache = {};
+
+export const hasGoc = (docId) => !!GOC_LOADERS[`../data/ktc/goc/${docId}.json`];
+
+export async function loadGoc(docId) {
+  if (gocCache[docId]) return gocCache[docId];
+  const loader = GOC_LOADERS[`../data/ktc/goc/${docId}.json`];
+  const sections = loader ? await loader() : [];
+  gocCache[docId] = sections.map((s) => ({ ...s, plain: foldVi(s.html.replace(/<[^>]+>/g, " ")) }));
+  return gocCache[docId];
+}
+
+// Bỏ dấu tiếng Việt để tìm kiếm không phân biệt dấu.
+export const foldVi = (s) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D").toLowerCase().replace(/\s+/g, " ");

@@ -3,7 +3,7 @@ import { COLORS, FONT_IMPORT, LIGHT, RESPONSIVE_CSS, bodyFont } from "./theme.js
 import { BackButton } from "./components/ui.jsx";
 import DarkHeader from "./components/DarkHeader.jsx";
 import { INTERVIEW_SUBJECT_ID, WRITING_SUBJECT, findDeckSubject } from "./data/subjects.js";
-import { allMissionsDone, applySessionXp, loadProgress, missionBonus, rolloverMissions, saveProgress, touchSubject } from "./lib/progress.js";
+import { applySessionXp, loadProgress, pendingMissionReward, recordMissionSession, rolloverMissions, saveProgress, touchSubject } from "./lib/progress.js";
 import { markStepStarted } from "./lib/studyPlan.js";
 import LoginView from "./views/LoginView.jsx";
 import SettingsView from "./views/SettingsView.jsx";
@@ -20,6 +20,7 @@ import RewardView from "./views/RewardView.jsx";
 import KtcSubjectView from "./views/ktc/KtcSubjectView.jsx";
 import KtcQuizView from "./views/ktc/KtcQuizView.jsx";
 import KtcKeyView from "./views/ktc/KtcKeyView.jsx";
+import KtcGocView from "./views/ktc/KtcGocView.jsx";
 import { KTC_MOCK_ID, MOCK_EXAM, findKtcDoc } from "./data/ktc/vanBan.js";
 import { buildMockExam, cardsOf, loadKeyCards, pickCards, pickRound, recordAnswers, recordCards } from "./lib/ktcBank.js";
 
@@ -28,7 +29,7 @@ const LIGHT_VIEWS = new Set(["track", "hai-quan", "dashboard", "plan", "intervie
 // Telas escuras de estudo, que mostram o cabeçalho com nível/XP.
 const STUDY_VIEWS = new Set([
   "subject", "flashcards", "quiz", "writing", "reward",
-  "ktc-subject", "ktc-quiz", "ktc-cards", "ktc-loading", "ktc-key",
+  "ktc-subject", "ktc-quiz", "ktc-cards", "ktc-loading", "ktc-key", "ktc-goc",
 ]);
 
 const INITIAL_INTERVIEW_UI = { tab: "ban-do", filter: "all", deck: "all", prepMin: 5, talkMin: 5 };
@@ -79,14 +80,17 @@ export default function App() {
   const startKtc = async ({ kind, items, onlyWrong, section }) => {
     switch (kind) {
       case "key": setView("ktc-key"); break;
+      case "goc": setView("ktc-goc"); break;
       case "keycards": startCardRound(await loadKeyCards(ktcDoc.id)); break;
       case "cards": startCardRound(cardsOf(items)); break;
       default: startQuizRound(pickRound(items, progress.qStats, { onlyWrong, section }));
     }
   };
   const finishKtcQuiz = (results, xp, meta) => {
-    const returnTo = ktcSession.mode === "exam" ? "dashboard" : "ktc-subject";
-    awardXp(xp, { kind: "quiz", ...meta, patch: { qStats: recordAnswers(progress.qStats, results) } }, returnTo);
+    const isExam = ktcSession.mode === "exam";
+    const passed = isExam && meta.quizTotal > 0 && meta.quizCorrect / meta.quizTotal >= MOCK_EXAM.passRatio;
+    const patch = { qStats: recordAnswers(progress.qStats, results), mockExamsPassed: (progress.mockExamsPassed || 0) + (passed ? 1 : 0) };
+    awardXp(xp, { kind: "quiz", ...meta, patch }, isExam ? "dashboard" : "ktc-subject");
   };
   const finishKtcCards = (xp, meta) => {
     awardXp(xp, { ...meta, patch: { cardStats: recordCards(progress.cardStats, meta.cardResults) } }, "ktc-subject");
@@ -122,15 +126,12 @@ export default function App() {
     setView("reward");
   };
 
-  // kind: flashcard | quiz | interview — conta para as missões diárias e estatísticas.
+  // kind: flashcard | quiz | interview | writing — conta para as missões diárias e estatísticas.
   const awardXp = (amount, { kind, cardsReviewed = 0, quizCorrect = 0, quizTotal = 0, patch } = {}, returnTo = "dashboard") => {
     const { missionProgress: mp, missionStreak } = rolloverMissions(progress);
-    const missionProgress = {
-      ...mp,
-      flashcardDecks: mp.flashcardDecks + (kind === "flashcard" ? 1 : 0),
-      quizzes: mp.quizzes + (kind === "quiz" ? 1 : 0),
-    };
+    const missionProgress = recordMissionSession(mp, { kind, cardsReviewed, quizCorrect, quizTotal, xp: amount });
     const p = { ...progress, ...patch, missionProgress, missionStreak };
+    if (kind === "writing") p.writingsDone = (p.writingsDone || 0) + 1;
     finishSession({
       ...p,
       totalCardsReviewed: p.totalCardsReviewed + cardsReviewed,
@@ -138,14 +139,21 @@ export default function App() {
     }, amount, returnTo);
   };
 
+  // Recebe o XP de todas as missões concluídas e ainda não resgatadas.
   const claimMissionReward = () => {
     const { missionProgress, missionStreak } = rolloverMissions(progress);
-    if (!allMissionsDone(missionProgress) || missionProgress.claimed) return;
+    const { pending, xp, reachesStreak } = pendingMissionReward(missionProgress, missionStreak);
+    if (!pending.length) return;
     finishSession({
       ...progress,
-      missionProgress: { ...missionProgress, claimed: true },
-      missionStreak: missionStreak + 1,
-    }, missionBonus(missionStreak), "dashboard");
+      missionProgress: {
+        ...missionProgress,
+        claimedIds: [...missionProgress.claimedIds, ...pending.map((m) => m.id)],
+        streakCounted: missionProgress.streakCounted || reachesStreak,
+      },
+      missionStreak: missionStreak + (reachesStreak ? 1 : 0),
+      bestMissionStreak: Math.max(progress.bestMissionStreak || 0, missionStreak + (reachesStreak ? 1 : 0)),
+    }, xp, "dashboard");
   };
 
   /* ---------- Render ---------- */
@@ -187,6 +195,8 @@ export default function App() {
         return ktcDoc && <KtcSubjectView doc={ktcDoc} progress={progress} onStart={startKtc} />;
       case "ktc-key":
         return ktcDoc && <KtcKeyView files={ktcDoc.keyFiles} />;
+      case "ktc-goc":
+        return ktcDoc && <KtcGocView doc={ktcDoc} />;
       case "ktc-loading":
         return <div style={{ color: COLORS.muted }}>Đang chuẩn bị đề thi…</div>;
       case "ktc-quiz":
@@ -225,26 +235,30 @@ export default function App() {
     "ktc-quiz": ktcDoc ? ["ktc-subject", ktcDoc.name] : ["dashboard", "Thoát bài thi"],
     "ktc-cards": ["ktc-subject", ktcDoc?.name],
     "ktc-key": ["ktc-subject", ktcDoc?.name],
+    "ktc-goc": ["ktc-subject", ktcDoc?.name],
   }[view];
 
   return (
     <div
-      className={isLight ? "tda-root tda-wide" : "tda-root"}
+      className="tda-root tda-wide"
       style={{
         ...bodyFont,
-        background: isLight ? LIGHT.bg : COLORS.bg,
-        color: isLight ? LIGHT.text : COLORS.text,
+        background: LIGHT.bg,
+        color: LIGHT.text,
         borderRadius: 20,
-        padding: isLight ? 0 : "28px 28px 32px",
-        maxWidth: isLight ? 1440 : 900,
+        padding: 0,
+        maxWidth: 1440,
         margin: "0 auto", minHeight: "100vh", boxSizing: "border-box", position: "relative", overflow: "hidden",
       }}
     >
       <style>{FONT_IMPORT + RESPONSIVE_CSS}</style>
-      {!isLight && <BackgroundRings />}
-      {STUDY_VIEWS.has(view) && <DarkHeader progress={progress} />}
-      {backTo && <BackButton onClick={() => setView(backTo[0])}>{backTo[1]}</BackButton>}
-      {renderView()}
+      {isLight ? renderView() : (
+        <div style={{ padding: "18px 16px 28px" }}>
+          {STUDY_VIEWS.has(view) && <DarkHeader progress={progress} />}
+          {backTo && <BackButton onClick={() => setView(backTo[0])}>{backTo[1]}</BackButton>}
+          {renderView()}
+        </div>
+      )}
     </div>
   );
 }

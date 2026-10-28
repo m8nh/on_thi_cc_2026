@@ -31,7 +31,10 @@ export const STUDY_PLAN = [
     return {
       id: `k${i + 1}-${g.id}`, phase: "Vòng 1", title: g.title, goal: g.goal,
       subjectId: docs[0].id,
-      materials: docs.map((d) => ({ type: "deck", label: ktcMaterialLabel(d), subjectId: d.id })),
+      materials: docs.flatMap((d) => [
+        ...(d.video ? [{ type: "video", label: `Video ${d.name} (giọng Nhật Phong, ${d.video.length})`, url: `${MATERIAL_BASE}materials/${d.video.file}` }] : []),
+        { type: "deck", label: ktcMaterialLabel(d), subjectId: d.id },
+      ]),
     };
   }),
   {

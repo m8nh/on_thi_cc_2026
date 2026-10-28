@@ -70,7 +70,7 @@ export default function WritingView({ progress, setProgress, onComplete }) {
 
       {draft && !result && <ExamForm draft={draft} onChange={updateDraft} onSubmit={submit} loading={loading} />}
 
-      {result && <FeedbackPanel result={result} onFinish={() => onComplete(COMPLETION_XP)} />}
+      {result && <FeedbackPanel result={result} onFinish={() => onComplete(COMPLETION_XP, { kind: "writing" })} />}
     </div>
   );
 }

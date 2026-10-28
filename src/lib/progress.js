@@ -1,5 +1,5 @@
 import { TIPS } from "../data/tips.js";
-import { DAILY_MISSIONS } from "../data/missions.js";
+import { DAILY_MISSIONS, HIGH_SCORE, MISSIONS_FOR_STREAK } from "../data/missions.js";
 import { todayKey, yesterdayKey } from "./dates.js";
 import { markStepStarted } from "./studyPlan.js";
 
@@ -16,6 +16,7 @@ export const DEFAULT_PROGRESS = {
   planStatus: {}, materialsDone: {},
   interview: { ratings: {}, notes: {}, prepared: {} },
   qStats: {}, cardStats: {},
+  mockExamsPassed: 0, writingsDone: 0, bestMissionStreak: 0,
 };
 
 export function loadProgress() {
@@ -42,29 +43,75 @@ const addUnique = (arr, item) => (arr.includes(item) ? arr : [...arr, item]);
 
 /* ---------- Missões diárias ---------- */
 
-export function missionValue(mp, mission) {
-  if (!mp) return 0;
-  return mission.key === "subjectsTouched" ? mp.subjectsTouched.length : mp[mission.key];
+const MISSION_COUNTERS = ["flashcardDecks", "cardsReviewed", "quizzes", "quizCorrect", "highScoreRounds", "writings", "interviews", "sessions", "studyXp"];
+
+function freshMissionDay(dateKey) {
+  const mp = { date: dateKey, subjectsTouched: [], claimedIds: [], streakCounted: false };
+  MISSION_COUNTERS.forEach((k) => { mp[k] = 0; });
+  return mp;
 }
 
-export const allMissionsDone = (mp) => DAILY_MISSIONS.every((m) => missionValue(mp, m) >= m.target);
+// Completa campos que faltam (dados salvos antes de haver 10 missões).
+// O formato antigo tinha só `claimed: true/false` para as 3 missões originais.
+function normalizeMissionDay(mp) {
+  const base = freshMissionDay(mp.date);
+  const out = { ...base, ...mp };
+  if (mp.claimed && !mp.claimedIds) {
+    out.claimedIds = ["flashcard", "quiz", "subjects"];
+    out.streakCounted = true;
+  }
+  delete out.claimed;
+  return out;
+}
+
+export function missionValue(mp, mission) {
+  if (!mp) return 0;
+  return mission.key === "subjectsTouched" ? mp.subjectsTouched.length : (mp[mission.key] || 0);
+}
+
+export const isMissionDone = (mp, m) => missionValue(mp, m) >= m.target;
+export const doneMissions = (mp) => DAILY_MISSIONS.filter((m) => isMissionDone(mp, m));
+// Missões concluídas cujo XP ainda não foi recebido.
+export const claimableMissions = (mp) => doneMissions(mp).filter((m) => !mp.claimedIds.includes(m.id));
+export const allMissionsDone = (mp) => doneMissions(mp).length === DAILY_MISSIONS.length;
 
 export const missionBonus = (streak) => 20 + Math.min(streak, 5) * 4;
 
-function freshMissionDay(dateKey) {
-  return { date: dateKey, flashcardDecks: 0, quizzes: 0, subjectsTouched: [], claimed: false };
+// XP que o botão "Nhận thưởng" entrega agora: missões pendentes + bônus de
+// sequência quando este resgate faz o dia atingir MISSIONS_FOR_STREAK.
+export function pendingMissionReward(mp, streak) {
+  const pending = claimableMissions(mp);
+  const xp = pending.reduce((sum, m) => sum + m.xp, 0);
+  const reachesStreak = !mp.streakCounted && mp.claimedIds.length + pending.length >= MISSIONS_FOR_STREAK;
+  return { pending, xp: xp + (reachesStreak ? missionBonus(streak) : 0), reachesStreak };
 }
 
-// Se o dia mudou, "vira a página" das missões. Se o dia anterior não foi
-// concluído (e reivindicado), zera só a sequência de bônus — nunca XP/nível.
+// Se o dia mudou, "vira a página" das missões. Se o dia anterior não atingiu
+// MISSIONS_FOR_STREAK, zera só a sequência de bônus — nunca XP/nível.
 export function rolloverMissions(p, dateKey = todayKey()) {
   if (p.missionProgress && p.missionProgress.date === dateKey) {
-    return { missionProgress: p.missionProgress, missionStreak: p.missionStreak || 0 };
+    return { missionProgress: normalizeMissionDay(p.missionProgress), missionStreak: p.missionStreak || 0 };
   }
-  const hadPrevious = !!p.missionProgress;
-  const wasClaimed = hadPrevious && p.missionProgress.claimed;
-  const missionStreak = hadPrevious && !wasClaimed ? 0 : (p.missionStreak || 0);
+  const prev = p.missionProgress && normalizeMissionDay(p.missionProgress);
+  const missionStreak = prev && !prev.streakCounted ? 0 : (p.missionStreak || 0);
   return { missionProgress: freshMissionDay(dateKey), missionStreak };
+}
+
+// Soma uma sessão concluída nos contadores do dia.
+export function recordMissionSession(mp, { kind, cardsReviewed = 0, quizCorrect = 0, quizTotal = 0, xp = 0 }) {
+  const highScore = kind === "quiz" && quizTotal >= HIGH_SCORE.minQuestions && quizCorrect / quizTotal >= HIGH_SCORE.ratio;
+  return {
+    ...mp,
+    flashcardDecks: mp.flashcardDecks + (kind === "flashcard" ? 1 : 0),
+    cardsReviewed: mp.cardsReviewed + cardsReviewed,
+    quizzes: mp.quizzes + (kind === "quiz" ? 1 : 0),
+    quizCorrect: mp.quizCorrect + quizCorrect,
+    highScoreRounds: mp.highScoreRounds + (highScore ? 1 : 0),
+    writings: mp.writings + (kind === "writing" ? 1 : 0),
+    interviews: mp.interviews + (kind === "interview" ? 1 : 0),
+    sessions: mp.sessions + 1,
+    studyXp: mp.studyXp + xp,
+  };
 }
 
 /* ---------- Sessões e XP ---------- */

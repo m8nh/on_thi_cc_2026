@@ -36,6 +36,7 @@ const DOCS = [
     id: "vb01", no: 1, group: "g1", priority: 3, icon: Landmark,
     name: "NĐ 306/2026 về Bộ Ngoại giao",
     ref: "Chức năng, nhiệm vụ, quyền hạn, cơ cấu tổ chức · hiệu lực 03/8/2026 · thay thế NĐ 28/2025",
+    video: { file: "nd306-2026-bo-ngoai-giao-nhat-phong.mp4", length: "8:58" },
     focus: [
       "Vị trí, chức năng: thống nhất quản lý nhà nước về đối ngoại; tham mưu cho BCH Trung ương, Bộ Chính trị, Ban Bí thư (Điều 1).",
       "Nhiệm vụ về pháp luật, chiến lược; quản lý thống nhất hoạt động đối ngoại, hội nghị quốc tế tại Việt Nam (Điều 2, khoản 1–7).",

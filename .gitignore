@@ -2,7 +2,7 @@ node_modules/
 dist/
 .DS_Store
 
-# Ngân hàng câu hỏi mua (tài liệu có bản quyền) — không đưa lên GitHub
+# Tài liệu ôn thi (ngân hàng câu hỏi, KEY) — không đưa lên GitHub
 src/data/ktc/banks/
 _to_delete/
 public/key/

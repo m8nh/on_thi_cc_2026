@@ -1,21 +1,35 @@
-import { CalendarDays, ChevronRight, Trophy } from "lucide-react";
+import { useState } from "react";
+import { BookOpen, CalendarDays, ChevronDown, ChevronRight, Trophy } from "lucide-react";
 import { LIGHT, displayFont, monoFont } from "../../theme.js";
 import { lightCardBlock, lightCardStyle, lightIconBox } from "../../styles.js";
 import { GroupHeading, ProgressBar, SubjectRow } from "../../components/ui.jsx";
 import { NGHIEP_VU_SUBJECT, WRITING_SUBJECT } from "../../data/subjects.js";
-import { KTC_DOCS, KTC_GROUPS, KTC_MOCK_ID, MOCK_EXAM, ktcDocsInGroup, ktcQuestionTotal, priorityStars } from "../../data/ktc/vanBan.js";
-import { docStats } from "../../lib/ktcBank.js";
-import { TIPS } from "../../data/tips.js";
+import { KTC_DOCS, KTC_GROUPS, KTC_MOCK_ID, KTC_TOTAL_QUESTIONS, MOCK_EXAM, ktcDocsInGroup, ktcQuestionTotal, priorityStars } from "../../data/ktc/vanBan.js";
+import { countSeen, docStats } from "../../lib/ktcBank.js";
 import { WEEKDAYS_VI, buildCalendarGrid, toDateKey } from "../../lib/dates.js";
 
 const headingStyle = { fontSize: 14.5, margin: "18px 0 8px" };
 
 export default function SubjectsColumn({ progress, actions }) {
+  const [showDocs, setShowDocs] = useState(false);
+  const seen = countSeen(progress.qStats);
   return (
     <div>
       <GroupHeading style={headingStyle}>Vòng 1 · Kiến thức chung</GroupHeading>
-      <SubjectRow subject={MOCK_SUBJECT} highlight onClick={() => actions.openDeck(KTC_MOCK_ID)} />
-      {KTC_GROUPS.map((g) => (
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
+        <Vong1Tile
+          icon={Trophy} accent={LIGHT.gold} title="Thi thử"
+          sub={`${MOCK_EXAM.questions} câu · ${MOCK_EXAM.minutes} phút · đạt từ ${MOCK_EXAM.passRatio * 100}%`}
+          onClick={() => actions.openDeck(KTC_MOCK_ID)}
+        />
+        <Vong1Tile
+          icon={BookOpen} accent={LIGHT.teal} title="Ôn tài liệu" active={showDocs}
+          sub={`${KTC_DOCS.length} văn bản · ${seen}/${KTC_TOTAL_QUESTIONS} câu đã làm`}
+          trailing={<ChevronDown size={15} color={LIGHT.muted} style={{ transform: showDocs ? "rotate(180deg)" : "none", transition: "transform .2s" }} />}
+          onClick={() => setShowDocs((v) => !v)}
+        />
+      </div>
+      {showDocs && KTC_GROUPS.map((g) => (
         <div key={g.id}>
           <div style={{ fontSize: 12.5, color: LIGHT.muted, fontWeight: 600, margin: "12px 0 7px" }}>{g.no}. {g.title}</div>
           {ktcDocsInGroup(g.id).map((d) => (
@@ -29,16 +43,28 @@ export default function SubjectsColumn({ progress, actions }) {
       <SubjectRow subject={NGHIEP_VU_SUBJECT} onClick={() => actions.openDeck(NGHIEP_VU_SUBJECT.id)} />
 
       <MiniCalendar sessionDates={progress.sessionDates} />
-      <Achievements tipsSeen={progress.tipsSeen} />
     </div>
   );
 }
 
-const MOCK_SUBJECT = {
-  name: "Thi thử Vòng 1",
-  ref: `${MOCK_EXAM.questions} câu · ${MOCK_EXAM.minutes} phút · trộn ${KTC_DOCS.length} văn bản theo mức ưu tiên · đúng từ ${MOCK_EXAM.passRatio * 100}% là đạt`,
-  icon: Trophy,
-};
+// Ô lớn của Vòng 1 (Thi thử / Ôn tài liệu).
+function Vong1Tile({ icon: Icon, accent, title, sub, onClick, active, trailing }) {
+  return (
+    <button onClick={onClick} style={{
+      ...lightCardBlock, marginBottom: 0, display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 10,
+      textAlign: "left", cursor: "pointer", color: LIGHT.text, border: `1px solid ${active ? accent : LIGHT.border}`,
+    }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
+        <div style={{ ...lightIconBox, background: accent === LIGHT.gold ? LIGHT.goldSoft : "rgba(46,154,118,0.12)" }}><Icon size={17} color={accent} /></div>
+        {trailing ?? <ChevronRight size={15} color={LIGHT.muted} />}
+      </div>
+      <div>
+        <div style={{ ...displayFont, fontWeight: 600, fontSize: 16 }}>{title}</div>
+        <div style={{ color: LIGHT.muted, fontSize: 12, marginTop: 3, lineHeight: 1.4 }}>{sub}</div>
+      </div>
+    </button>
+  );
+}
 
 // Linha de văn bản: prioridade, quantas questões já fez.
 function KtcRow({ doc, qStats, onClick }) {
@@ -98,29 +124,5 @@ function MiniCalendar({ sessionDates }) {
         })}
       </div>
     </div>
-  );
-}
-
-// Bảng thành tích: uma medalha por dica desbloqueada.
-function Achievements({ tipsSeen }) {
-  return (
-    <>
-      <div style={{ ...displayFont, fontSize: 15.5, fontWeight: 600, margin: "20px 0 10px" }}>Bảng thành tích</div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 8 }}>
-        {TIPS.map((tip, i) => {
-          const Icon = tip.icon;
-          const unlocked = tipsSeen.includes(i);
-          return (
-            <div key={i} title={unlocked ? tip.title : "Chưa mở khóa"} style={{
-              aspectRatio: "1", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center",
-              background: unlocked ? LIGHT.goldSoft : LIGHT.surface,
-              border: `1px solid ${unlocked ? LIGHT.gold : LIGHT.border}`, opacity: unlocked ? 1 : 0.45,
-            }}>
-              <Icon size={14} color={unlocked ? LIGHT.gold : LIGHT.muted} />
-            </div>
-          );
-        })}
-      </div>
-    </>
   );
 }
