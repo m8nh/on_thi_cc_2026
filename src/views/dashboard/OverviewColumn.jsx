@@ -2,7 +2,8 @@ import { Clock, Flame, ListChecks, Target, Trophy } from "lucide-react";
 import { LIGHT, LIGHT_GRADIENT, displayFont, monoFont } from "../../theme.js";
 import { lightBtnStyle, lightCardBlock } from "../../styles.js";
 import { CheckMark, ProgressBar, RingStat } from "../../components/ui.jsx";
-import { STAGE1_SUBJECTS } from "../../data/subjects.js";
+import { KTC_TOTAL_QUESTIONS } from "../../data/ktc/vanBan.js";
+import { countSeen } from "../../lib/ktcBank.js";
 import { DAILY_MISSIONS } from "../../data/missions.js";
 import { STUDY_PLAN } from "../../data/studyPlan.js";
 import { fullCountdown, last7Days } from "../../lib/dates.js";
@@ -141,15 +142,15 @@ function MissionsCard({ missionProgress, missionStreak, onClaim }) {
 
 // Thống kê
 function StatsCards({ progress }) {
-  const touchedStage1 = progress.subjectsEverTouched.filter((id) => STAGE1_SUBJECTS.some((s) => s.id === id)).length;
-  const vong1Pct = Math.round((touchedStage1 / STAGE1_SUBJECTS.length) * 100);
+  const seenVong1 = countSeen(progress.qStats);
+  const vong1Pct = KTC_TOTAL_QUESTIONS ? Math.round((seenVong1 / KTC_TOTAL_QUESTIONS) * 100) : 0;
   const { correct, total } = progress.quizStats;
   const accuracyPct = total > 0 ? Math.round((correct / total) * 100) : null;
   const statCard = { ...lightCardBlock, marginBottom: 0, textAlign: "center" };
   return (
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
       <div style={statCard}>
-        <RingStat pct={vong1Pct} color={LIGHT.teal} label="Tiến độ Vòng 1" sub={`${touchedStage1}/${STAGE1_SUBJECTS.length} chuyên đề`} />
+        <RingStat pct={vong1Pct} color={LIGHT.teal} label="Tiến độ Vòng 1" sub={`${seenVong1}/${KTC_TOTAL_QUESTIONS} câu đã làm`} />
       </div>
       <div style={statCard}>
         <RingStat pct={accuracyPct ?? 0} color={LIGHT.purple} label="Độ chính xác" sub={accuracyPct === null ? "Chưa có dữ liệu" : `${correct}/${total} câu`} showDash={accuracyPct === null} />

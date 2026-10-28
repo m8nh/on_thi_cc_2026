@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ChevronRight } from "lucide-react";
-import { COLORS, bodyFont, displayFont, monoFont } from "../theme.js";
+import { COLORS, TINT, bodyFont, displayFont, monoFont } from "../theme.js";
 import { btnStyle } from "../styles.js";
 
 const XP_CORRECT = 15;
@@ -48,7 +48,7 @@ export default function QuizView({ subject, onComplete }) {
 
 function optionStyle(answered, isCorrect, isSelected) {
   let border = COLORS.border, background = "transparent";
-  if (answered && isCorrect) { border = COLORS.teal; background = "rgba(62,180,137,0.12)"; }
-  else if (answered && isSelected) { border = COLORS.red; background = "rgba(224,102,122,0.12)"; }
+  if (answered && isCorrect) { border = COLORS.teal; background = TINT.teal; }
+  else if (answered && isSelected) { border = COLORS.red; background = TINT.red; }
   return { textAlign: "left", padding: "11px 14px", borderRadius: 10, border: `1px solid ${border}`, background, color: COLORS.text, cursor: answered ? "default" : "pointer", fontSize: 15.5, ...bodyFont };
 }

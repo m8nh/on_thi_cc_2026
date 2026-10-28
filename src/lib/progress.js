@@ -15,6 +15,7 @@ export const DEFAULT_PROGRESS = {
   quizStats: { correct: 0, total: 0 },
   planStatus: {}, materialsDone: {},
   interview: { ratings: {}, notes: {}, prepared: {} },
+  qStats: {}, cardStats: {},
 };
 
 export function loadProgress() {

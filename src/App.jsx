@@ -17,11 +17,19 @@ import FlashcardsView from "./views/FlashcardsView.jsx";
 import QuizView from "./views/QuizView.jsx";
 import WritingView from "./views/WritingView.jsx";
 import RewardView from "./views/RewardView.jsx";
+import KtcSubjectView from "./views/ktc/KtcSubjectView.jsx";
+import KtcQuizView from "./views/ktc/KtcQuizView.jsx";
+import KtcKeyView from "./views/ktc/KtcKeyView.jsx";
+import { KTC_MOCK_ID, MOCK_EXAM, findKtcDoc } from "./data/ktc/vanBan.js";
+import { buildMockExam, cardsOf, loadKeyCards, pickCards, pickRound, recordAnswers, recordCards } from "./lib/ktcBank.js";
 
 // Telas no tema claro (largas); as demais usam o tema escuro centralizado.
 const LIGHT_VIEWS = new Set(["track", "hai-quan", "dashboard", "plan", "interview"]);
 // Telas escuras de estudo, que mostram o cabeçalho com nível/XP.
-const STUDY_VIEWS = new Set(["subject", "flashcards", "quiz", "writing", "reward"]);
+const STUDY_VIEWS = new Set([
+  "subject", "flashcards", "quiz", "writing", "reward",
+  "ktc-subject", "ktc-quiz", "ktc-cards", "ktc-loading", "ktc-key",
+]);
 
 const INITIAL_INTERVIEW_UI = { tab: "ban-do", filter: "all", deck: "all", prepMin: 5, talkMin: 5 };
 
@@ -31,17 +39,57 @@ export default function App() {
   const [subjectId, setSubjectId] = useState(null);
   const [reward, setReward] = useState(null); // { xp, leveledUp, tip, returnTo }
   const [interviewUi, setInterviewUi] = useState(INITIAL_INTERVIEW_UI);
+  const [ktcSession, setKtcSession] = useState(null); // { mode, items | cards }
 
   useEffect(() => { saveProgress(progress); }, [progress]);
 
   const subject = findDeckSubject(subjectId);
+  const ktcDoc = findKtcDoc(subjectId);
 
   /* ---------- Navegação ---------- */
 
   const openDeck = (id) => {
     setProgress((p) => touchSubject(p, id));
+    if (id === KTC_MOCK_ID) { startMockExam(); return; }
     setSubjectId(id);
-    setView("subject");
+    setView(findKtcDoc(id) ? "ktc-subject" : "subject");
+  };
+
+  /* ---------- Vòng 1: ngân hàng câu hỏi ---------- */
+
+  const startMockExam = async () => {
+    setSubjectId(null);
+    setView("ktc-loading");
+    const items = await buildMockExam();
+    if (!items.length) { setView("dashboard"); return; } // ngân hàng câu hỏi ausente neste build
+    setKtcSession({ mode: "exam", items });
+    setView("ktc-quiz");
+  };
+  const startQuizRound = (items) => {
+    if (!items.length) return;
+    setKtcSession({ mode: "practice", items });
+    setView("ktc-quiz");
+  };
+  const startCardRound = (allCards) => {
+    const cards = pickCards(allCards, progress.cardStats);
+    if (!cards.length) return;
+    setKtcSession({ mode: "cards", cards });
+    setView("ktc-cards");
+  };
+  const startKtc = async ({ kind, items, onlyWrong, section }) => {
+    switch (kind) {
+      case "key": setView("ktc-key"); break;
+      case "keycards": startCardRound(await loadKeyCards(ktcDoc.id)); break;
+      case "cards": startCardRound(cardsOf(items)); break;
+      default: startQuizRound(pickRound(items, progress.qStats, { onlyWrong, section }));
+    }
+  };
+  const finishKtcQuiz = (results, xp, meta) => {
+    const returnTo = ktcSession.mode === "exam" ? "dashboard" : "ktc-subject";
+    awardXp(xp, { kind: "quiz", ...meta, patch: { qStats: recordAnswers(progress.qStats, results) } }, returnTo);
+  };
+  const finishKtcCards = (xp, meta) => {
+    awardXp(xp, { ...meta, patch: { cardStats: recordCards(progress.cardStats, meta.cardResults) } }, "ktc-subject");
   };
   const openWriting = () => {
     setProgress((p) => touchSubject(p, WRITING_SUBJECT.id));
@@ -135,6 +183,25 @@ export default function App() {
         );
       case "subject":
         return subject && <SubjectView subject={subject} onStartFlashcards={() => setView("flashcards")} onStartQuiz={() => setView("quiz")} />;
+      case "ktc-subject":
+        return ktcDoc && <KtcSubjectView doc={ktcDoc} progress={progress} onStart={startKtc} />;
+      case "ktc-key":
+        return ktcDoc && <KtcKeyView files={ktcDoc.keyFiles} />;
+      case "ktc-loading":
+        return <div style={{ color: COLORS.muted }}>Đang chuẩn bị đề thi…</div>;
+      case "ktc-quiz":
+        return ktcSession && (
+          <KtcQuizView
+            key={ktcSession.items[0].id}
+            items={ktcSession.items}
+            mode={ktcSession.mode}
+            minutes={MOCK_EXAM.minutes}
+            passRatio={MOCK_EXAM.passRatio}
+            onFinish={finishKtcQuiz}
+          />
+        );
+      case "ktc-cards":
+        return ktcSession && <FlashcardsView cards={ktcSession.cards} onComplete={finishKtcCards} />;
       case "flashcards":
         return subject && <FlashcardsView subject={subject} onComplete={awardXp} />;
       case "quiz":
@@ -154,6 +221,10 @@ export default function App() {
     writing: ["dashboard", "Lộ trình"],
     flashcards: ["subject", subject?.name],
     quiz: ["subject", subject?.name],
+    "ktc-subject": ["dashboard", "Lộ trình"],
+    "ktc-quiz": ktcDoc ? ["ktc-subject", ktcDoc.name] : ["dashboard", "Thoát bài thi"],
+    "ktc-cards": ["ktc-subject", ktcDoc?.name],
+    "ktc-key": ["ktc-subject", ktcDoc?.name],
   }[view];
 
   return (

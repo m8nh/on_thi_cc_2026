@@ -4,10 +4,11 @@ export const stepStatus = (planStatus, step) => (planStatus || {})[step.id] || "
 const materialKey = (step, i) => `${step.id}:${i}`;
 export const isMaterialDone = (materialsDone, step, i) => !!(materialsDone || {})[materialKey(step, i)];
 
-// Abrir o baralho de um passo marca esse passo como "Đang học" (se ainda estava "Chưa học").
+// Abrir o baralho de um passo (ou de um dos seus materiais) marca esse passo
+// como "Đang học" (se ainda estava "Chưa học").
 export function markStepStarted(planStatus, subjectId) {
   const ps = planStatus || {};
-  const step = STUDY_PLAN.find((st) => st.subjectId === subjectId);
+  const step = STUDY_PLAN.find((st) => st.subjectId === subjectId || st.materials.some((m) => m.subjectId === subjectId));
   if (!step || stepStatus(ps, step) !== "todo") return ps;
   return { ...ps, [step.id]: "doing" };
 }

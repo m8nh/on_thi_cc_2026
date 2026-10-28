@@ -1,59 +1,7 @@
-import { Sparkles, BookOpen, Layers, Target, Zap, Award, ListChecks, Trophy } from "lucide-react";
-import { shuffle } from "../lib/shuffle.js";
+import { BookOpen, ListChecks } from "lucide-react";
+import { NGHIEP_VU_SUBJECT } from "./nghiepVu.js";
 
-/* ---------------------------------------------------------
-   NỘI DUNG — thay bằng flash card / câu hỏi / bài đọc thật
---------------------------------------------------------- */
-export const STAGE1_SUBJECTS = [
-  {
-    id: "ly-luan-chinh-tri", type: "deck",
-    name: "Lý luận chính trị",
-    ref: "Hệ thống chính trị và phương thức lãnh đạo của Đảng (Chuyên đề 3)",
-    icon: Sparkles,
-    flashcards: [{ front: "Hệ thống chính trị ở Việt Nam gồm những thành tố nào?", back: "Đảng Cộng sản Việt Nam, Nhà nước CHXHCN Việt Nam, Mặt trận Tổ quốc và các tổ chức chính trị - xã hội." }],
-    quiz: [{ q: "[Mẫu] Câu hỏi về hệ thống chính trị sẽ được cập nhật sau.", options: ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"], correct: 0, why: "Đây là câu hỏi mẫu — thay bằng nội dung thật của chuyên đề 3." }],
-  },
-  {
-    id: "nha-nuoc-phap-luat", type: "deck",
-    name: "Nhà nước & Pháp luật",
-    ref: "Giáo trình Lý luận NN&PL · Hiến pháp 2013",
-    icon: BookOpen,
-    flashcards: [{ front: "Hiến pháp nước CHXHCN Việt Nam hiện hành ban hành năm nào?", back: "Năm 2013." }],
-    quiz: [{ q: "[Mẫu] Câu hỏi về Hiến pháp 2013 sẽ được cập nhật sau.", options: ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"], correct: 0, why: "Đây là câu hỏi mẫu — thay bằng nội dung thật." }],
-  },
-  {
-    id: "to-chuc-bo-may", type: "deck",
-    name: "Tổ chức bộ máy nhà nước",
-    ref: "Điều lệ Đảng · Luật tổ chức QH/CP · NĐ 123, 101, 81",
-    icon: Layers,
-    flashcards: [{ front: "Luật Tổ chức Quốc hội hiện hành ban hành ngày nào?", back: "Ngày 20/11/2014." }],
-    quiz: [{ q: "[Mẫu] Câu hỏi về tổ chức bộ máy nhà nước sẽ được cập nhật sau.", options: ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"], correct: 0, why: "Đây là câu hỏi mẫu — thay bằng nội dung thật." }],
-  },
-  {
-    id: "can-bo-cong-chuc", type: "deck",
-    name: "Cán bộ, công chức",
-    ref: "Luật CBCC 2008 & sửa đổi 2019 · Luật CQ đại diện VN ở nước ngoài",
-    icon: Target,
-    flashcards: [{ front: "Luật Cán bộ, công chức được ban hành năm nào?", back: "Năm 2008, sửa đổi bổ sung năm 2019." }],
-    quiz: [{ q: "[Mẫu] Câu hỏi về Luật Cán bộ, công chức sẽ được cập nhật sau.", options: ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"], correct: 0, why: "Đây là câu hỏi mẫu — thay bằng nội dung thật." }],
-  },
-  {
-    id: "lao-dong-vb-phap-luat", type: "deck",
-    name: "Lao động & Văn bản pháp luật",
-    ref: "Bộ luật Lao động 2019 · Luật ban hành VBQPPL 2015/2020",
-    icon: Zap,
-    flashcards: [{ front: "Bộ luật Lao động hiện hành được thông qua ngày nào?", back: "Ngày 20/11/2019." }],
-    quiz: [{ q: "[Mẫu] Câu hỏi về Bộ luật Lao động sẽ được cập nhật sau.", options: ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"], correct: 0, why: "Đây là câu hỏi mẫu — thay bằng nội dung thật." }],
-  },
-  {
-    id: "cai-cach-hanh-chinh", type: "deck",
-    name: "Cải cách hành chính",
-    ref: "Nghị quyết 76/NQ-CP (giai đoạn 2021–2030)",
-    icon: Award,
-    flashcards: [{ front: "Nghị quyết 76/NQ-CP ban hành ngày nào?", back: "Ngày 15/7/2021, ban hành Chương trình tổng thể cải cách hành chính nhà nước giai đoạn 2021-2030." }],
-    quiz: [{ q: "[Mẫu] Câu hỏi về cải cách hành chính sẽ được cập nhật sau.", options: ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"], correct: 0, why: "Đây là câu hỏi mẫu — thay bằng nội dung thật." }],
-  },
-];
+export { NGHIEP_VU_SUBJECT } from "./nghiepVu.js";
 
 /* ---------------------------------------------------------
    NỀN TẢNG — bộ thẻ từ bài "Bản đồ hệ thống chính trị Việt Nam"
@@ -94,17 +42,6 @@ export const FOUNDATION_SUBJECT = {
   ],
 };
 
-// Junta flashcards e questões de todos os chuyên đề do Vòng 1 num só baralho/
-// simulado embaralhado — igual à prova de verdade, que mistura tudo.
-export const COMBINED_SUBJECT = {
-  id: "tong-hop-vong1", type: "deck",
-  name: "Ôn tập tổng hợp",
-  ref: "Trộn ngẫu nhiên toàn bộ 6 chuyên đề · giống cấu trúc đề thi thật",
-  icon: Trophy,
-  flashcards: shuffle(STAGE1_SUBJECTS.flatMap((s) => s.flashcards)),
-  quiz: shuffle(STAGE1_SUBJECTS.flatMap((s) => s.quiz)),
-};
-
 export const WRITING_SUBJECT = {
   id: "viet-dich-thuat", type: "writing",
   name: "Kỹ năng viết – Dịch thuật (Lần 2)",
@@ -136,7 +73,7 @@ export const CHECKLIST_CRITERIA = [
 ];
 
 // Tudo que abre na tela de baralho (flash card + đề thi thử).
-export const DECK_SUBJECTS = [FOUNDATION_SUBJECT, COMBINED_SUBJECT, ...STAGE1_SUBJECTS];
+export const DECK_SUBJECTS = [FOUNDATION_SUBJECT, NGHIEP_VU_SUBJECT];
 export const findDeckSubject = (id) => DECK_SUBJECTS.find((s) => s.id === id);
 
 // A entrevista não é um baralho: abre a tela própria de phỏng vấn.

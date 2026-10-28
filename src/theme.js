@@ -14,6 +14,9 @@ export const LIGHT = {
   goldSoft: "#FBF1DC",
 };
 
+// Fundos translúcidos do tema escuro para opção certa / errada / selecionada.
+export const TINT = { teal: "rgba(62,180,137,0.12)", red: "rgba(224,102,122,0.12)", gold: "rgba(214,174,61,0.12)" };
+
 export const DARK_GRADIENT = `linear-gradient(90deg, ${COLORS.teal}, ${COLORS.gold})`;
 export const LIGHT_GRADIENT = `linear-gradient(90deg, ${LIGHT.teal}, ${LIGHT.gold})`;
 

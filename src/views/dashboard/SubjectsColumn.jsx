@@ -1,8 +1,10 @@
-import { CalendarDays } from "lucide-react";
+import { CalendarDays, ChevronRight, Trophy } from "lucide-react";
 import { LIGHT, displayFont, monoFont } from "../../theme.js";
-import { lightCardBlock } from "../../styles.js";
-import { GroupHeading, SubjectRow } from "../../components/ui.jsx";
-import { COMBINED_SUBJECT, STAGE1_SUBJECTS, WRITING_SUBJECT } from "../../data/subjects.js";
+import { lightCardBlock, lightCardStyle, lightIconBox } from "../../styles.js";
+import { GroupHeading, ProgressBar, SubjectRow } from "../../components/ui.jsx";
+import { NGHIEP_VU_SUBJECT, WRITING_SUBJECT } from "../../data/subjects.js";
+import { KTC_DOCS, KTC_GROUPS, KTC_MOCK_ID, MOCK_EXAM, ktcDocsInGroup, ktcQuestionTotal, priorityStars } from "../../data/ktc/vanBan.js";
+import { docStats } from "../../lib/ktcBank.js";
 import { TIPS } from "../../data/tips.js";
 import { WEEKDAYS_VI, buildCalendarGrid, toDateKey } from "../../lib/dates.js";
 
@@ -12,16 +14,55 @@ export default function SubjectsColumn({ progress, actions }) {
   return (
     <div>
       <GroupHeading style={headingStyle}>Vòng 1 · Kiến thức chung</GroupHeading>
-      <SubjectRow subject={COMBINED_SUBJECT} highlight onClick={() => actions.openDeck(COMBINED_SUBJECT.id)} />
-      <div style={{ fontSize: 12, color: LIGHT.muted, margin: "12px 0 8px" }}>Hoặc luyện riêng từng chuyên đề:</div>
-      {STAGE1_SUBJECTS.map((s) => <SubjectRow key={s.id} subject={s} onClick={() => actions.openDeck(s.id)} />)}
+      <SubjectRow subject={MOCK_SUBJECT} highlight onClick={() => actions.openDeck(KTC_MOCK_ID)} />
+      {KTC_GROUPS.map((g) => (
+        <div key={g.id}>
+          <div style={{ fontSize: 12.5, color: LIGHT.muted, fontWeight: 600, margin: "12px 0 7px" }}>{g.no}. {g.title}</div>
+          {ktcDocsInGroup(g.id).map((d) => (
+            <KtcRow key={d.id} doc={d} qStats={progress.qStats} onClick={() => actions.openDeck(d.id)} />
+          ))}
+        </div>
+      ))}
 
       <GroupHeading style={headingStyle}>Vòng 2 · Kỹ năng ngôn ngữ</GroupHeading>
       <SubjectRow subject={WRITING_SUBJECT} onClick={actions.openWriting} />
+      <SubjectRow subject={NGHIEP_VU_SUBJECT} onClick={() => actions.openDeck(NGHIEP_VU_SUBJECT.id)} />
 
       <MiniCalendar sessionDates={progress.sessionDates} />
       <Achievements tipsSeen={progress.tipsSeen} />
     </div>
+  );
+}
+
+const MOCK_SUBJECT = {
+  name: "Thi thử Vòng 1",
+  ref: `${MOCK_EXAM.questions} câu · ${MOCK_EXAM.minutes} phút · trộn ${KTC_DOCS.length} văn bản theo mức ưu tiên · đúng từ ${MOCK_EXAM.passRatio * 100}% là đạt`,
+  icon: Trophy,
+};
+
+// Linha de văn bản: prioridade, quantas questões já fez.
+function KtcRow({ doc, qStats, onClick }) {
+  const Icon = doc.icon;
+  const total = ktcQuestionTotal(doc);
+  const { seen } = docStats(doc.id, qStats);
+  const pct = total ? Math.round((seen / total) * 100) : 0;
+  return (
+    <button onClick={onClick} style={lightCardStyle}>
+      <div style={lightIconBox}><Icon size={16} color={LIGHT.teal} /></div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ ...displayFont, fontWeight: 600, fontSize: 15 }}>{doc.no}. {doc.name}</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
+          <span style={{ color: LIGHT.gold, fontSize: 11.5, letterSpacing: 1 }}>{priorityStars(doc.priority)}</span>
+          {total > 0 ? (
+            <>
+              <ProgressBar pct={pct} height={4} style={{ flex: 1, maxWidth: 140 }} fill={LIGHT.teal} />
+              <span style={{ fontSize: 11.5, color: LIGHT.muted, ...monoFont }}>{seen}/{total}</span>
+            </>
+          ) : <span style={{ fontSize: 11.5, color: LIGHT.muted }}>{doc.keyFiles.length ? "KEY + thẻ từ khóa" : "chỉ có trọng tâm"}</span>}
+        </div>
+      </div>
+      <ChevronRight size={15} color={LIGHT.muted} />
+    </button>
   );
 }
 

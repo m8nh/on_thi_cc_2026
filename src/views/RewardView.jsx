@@ -2,6 +2,8 @@ import { ArrowLeft } from "lucide-react";
 import { COLORS, displayFont, monoFont } from "../theme.js";
 import { btnStyle } from "../styles.js";
 
+const RETURN_LABELS = { interview: "Về phần phỏng vấn", "ktc-subject": "Về văn bản" };
+
 export default function RewardView({ reward, onContinue }) {
   const TipIcon = reward.tip.icon;
   return (
@@ -17,7 +19,7 @@ export default function RewardView({ reward, onContinue }) {
         <div style={{ fontSize: 14.5, color: COLORS.muted, lineHeight: 1.6 }}>{reward.tip.body}</div>
       </div>
       <button onClick={onContinue} style={btnStyle(COLORS.gold, true)}>
-        <ArrowLeft size={15} /> {reward.returnTo === "interview" ? "Về phần phỏng vấn" : "Về lộ trình"}
+        <ArrowLeft size={15} /> {RETURN_LABELS[reward.returnTo] ?? "Về lộ trình"}
       </button>
     </div>
   );
