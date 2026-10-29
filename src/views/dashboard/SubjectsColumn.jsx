@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { BookOpen, CalendarDays, ChevronDown, ChevronRight, Trophy } from "lucide-react";
+import { BookOpen, CalendarDays, ChevronDown, ChevronRight, PlayCircle, Trophy } from "lucide-react";
 import { LIGHT, displayFont, monoFont } from "../../theme.js";
 import { lightCardBlock, lightCardStyle, lightIconBox } from "../../styles.js";
 import { GroupHeading, ProgressBar, SubjectRow } from "../../components/ui.jsx";
 import { NGHIEP_VU_SUBJECT, WRITING_SUBJECT } from "../../data/subjects.js";
-import { KTC_DOCS, KTC_GROUPS, KTC_MOCK_ID, KTC_TOTAL_QUESTIONS, MOCK_EXAM, ktcDocsInGroup, ktcQuestionTotal, priorityStars } from "../../data/ktc/vanBan.js";
+import { KTC_DOCS, KTC_GROUPS, KTC_MOCK_ID, KTC_TOTAL_QUESTIONS, MOCK_EXAM, ktcDocsInGroup, ktcQuestionTotal, priorityStars, REVIEW_VIDEOS } from "../../data/ktc/vanBan.js";
 import { countSeen, docStats } from "../../lib/ktcBank.js";
 import { WEEKDAYS_VI, buildCalendarGrid, toDateKey } from "../../lib/dates.js";
 
@@ -12,6 +12,7 @@ const headingStyle = { fontSize: 14.5, margin: "18px 0 8px" };
 
 export default function SubjectsColumn({ progress, actions }) {
   const [showDocs, setShowDocs] = useState(false);
+  const [openVideo, setOpenVideo] = useState(null);
   const seen = countSeen(progress.qStats);
   return (
     <div>
@@ -29,6 +30,19 @@ export default function SubjectsColumn({ progress, actions }) {
           onClick={() => setShowDocs((v) => !v)}
         />
       </div>
+      {REVIEW_VIDEOS.map((v) => (
+        <div key={v.id} style={{ marginBottom: 10 }}>
+          <Vong1Tile
+            icon={PlayCircle} accent={LIGHT.gold} title={`Video ôn tập · ${v.title}`} active={openVideo === v.id}
+            sub={`${v.length} · ${v.sub}`}
+            trailing={<ChevronDown size={15} color={LIGHT.muted} style={{ transform: openVideo === v.id ? "rotate(180deg)" : "none", transition: "transform .2s" }} />}
+            onClick={() => setOpenVideo((cur) => (cur === v.id ? null : v.id))}
+          />
+          {openVideo === v.id && (
+            <video controls preload="metadata" src={`${import.meta.env.BASE_URL}materials/${v.file}`} style={{ width: "100%", aspectRatio: "16 / 9", borderRadius: 8, background: "#000", display: "block", marginTop: 8 }} />
+          )}
+        </div>
+      ))}
       {showDocs && KTC_GROUPS.map((g) => (
         <div key={g.id}>
           <div style={{ fontSize: 12.5, color: LIGHT.muted, fontWeight: 600, margin: "12px 0 7px" }}>{g.no}. {g.title}</div>
@@ -51,7 +65,7 @@ export default function SubjectsColumn({ progress, actions }) {
 function Vong1Tile({ icon: Icon, accent, title, sub, onClick, active, trailing }) {
   return (
     <button onClick={onClick} style={{
-      ...lightCardBlock, marginBottom: 0, display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 10,
+      ...lightCardBlock, width: "100%", marginBottom: 0, display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 10,
       textAlign: "left", cursor: "pointer", color: LIGHT.text, border: `1px solid ${active ? accent : LIGHT.border}`,
     }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>

@@ -50,6 +50,7 @@ const DOCS = [
     id: "vb02", no: 2, group: "g1", priority: 2, icon: Building2,
     name: "Luật Cơ quan đại diện VN ở nước ngoài",
     ref: "Luật 33/2009, sửa đổi 2017 và 08/2026 · VBHN 108/VBHN-VPQH",
+    video: { file: "luat-co-quan-dai-dien-nhat-phong.mp4", length: "7:10" },
     focus: [
       "Cơ quan đại diện: ngoại giao, lãnh sự, tại tổ chức quốc tế (Điều 1, 2, 4).",
       "Nguyên tắc: chịu chỉ đạo của Chủ tịch nước, Chính phủ, Thủ tướng; Bộ Ngoại giao quản lý trực tiếp; chế độ thủ trưởng (Điều 3).",
@@ -62,6 +63,7 @@ const DOCS = [
     id: "vb03", no: 3, group: "g2", priority: 3, icon: ScrollText,
     name: "Hiến pháp 2013 (sửa đổi 2025)",
     ref: "Sửa đổi bởi NQ 203/2025/QH15 · VBHN 52/VBHN-VPQH ngày 21/7/2025",
+    video: { file: "hien-phap-2013-sua-doi-2025-nhat-phong.mp4", length: "11:20" },
     focus: [
       "Chế độ chính trị: Điều 2, 4, 6, 8, 9; đường lối đối ngoại (Điều 12).",
       "Quyền con người, quyền công dân (Điều 14–49); người VN định cư ở nước ngoài (Điều 18).",
@@ -74,6 +76,7 @@ const DOCS = [
     id: "vb04", no: 4, group: "g2", priority: 2, icon: Flag,
     name: "Điều lệ Đảng Cộng sản Việt Nam",
     ref: "Đại hội XI thông qua 19/01/2011",
+    video: { file: "dieu-le-dang-2011-nhat-phong.mp4", length: "7:22" },
     focus: [
       "Đảng viên: tiêu chuẩn, nhiệm vụ, quyền, kết nạp, dự bị 12 tháng (Điều 1–8).",
       "Tập trung dân chủ (Điều 9); hệ thống tổ chức, đại hội, cấp ủy (Điều 10–14).",
@@ -86,6 +89,7 @@ const DOCS = [
     id: "vb05", no: 5, group: "g2", priority: 3, icon: Briefcase,
     name: "Luật Tổ chức Chính phủ 2025",
     ref: "Luật 63/2025/QH15 · VBHN 27/VBHN-VPQH năm 2026 · hiệu lực 01/3/2025",
+    video: { file: "luat-to-chuc-chinh-phu-2025-nhat-phong.mp4", length: "8:25" },
     focus: [
       "Vị trí, cơ cấu, thành viên, nhiệm kỳ; Thủ tướng (Điều 1–4); nguyên tắc tổ chức (Điều 5).",
       "Phân định thẩm quyền: phân quyền, phân cấp, ủy quyền (Điều 6–9).",
@@ -98,6 +102,7 @@ const DOCS = [
     id: "vb06", no: 6, group: "g2", priority: 3, icon: Network,
     name: "NĐ 303/2025 về cơ cấu bộ, cơ quan ngang bộ",
     ref: "Hiệu lực 20/11/2025 · thay thế NĐ 123/2016 và NĐ 101/2020",
+    video: { file: "nd-303-2025-co-cau-bo-nhat-phong.mp4", length: "7:12" },
     focus: [
       "Bộ trưởng chịu trách nhiệm toàn diện về mọi hoạt động của bộ (Điều 3).",
       "Cơ cấu: vụ; văn phòng; thanh tra; cục; đơn vị sự nghiệp công lập (Điều 5).",
@@ -110,6 +115,7 @@ const DOCS = [
     id: "vb07", no: 7, group: "g2", priority: 2, icon: Gavel,
     name: "Luật Tổ chức Quốc hội",
     ref: "Luật 57/2014, sửa đổi 2020, 2023, 2025 · VBHN 48/VBHN-VPQH",
+    video: { file: "luat-to-chuc-quoc-hoi-nhat-phong.mp4", length: "7:16" },
     focus: [
       "Nhiệm kỳ 05 năm (Điều 1, 2); làm luật (Điều 5); giám sát tối cao (Điều 6).",
       "Bầu, phê chuẩn, miễn nhiệm, bãi nhiệm; lấy phiếu tín nhiệm (Điều 8–12).",
@@ -122,6 +128,7 @@ const DOCS = [
     id: "vb08", no: 8, group: "g3", priority: 3, icon: Users,
     name: "Luật Cán bộ, công chức 2025",
     ref: "Luật 80/2025/QH15 · hiệu lực 01/7/2025 · thay thế Luật 2008",
+    video: { file: "luat-can-bo-cong-chuc-2025-nhat-phong.mp4", length: "9:38" },
     focus: [
       "Khái niệm, nguyên tắc thi hành công vụ, nguyên tắc quản lý (Điều 1–5).",
       "Nghĩa vụ, quyền (Điều 6–11); đạo đức công vụ, văn hóa giao tiếp, việc không được làm (Điều 12–14).",
@@ -134,6 +141,7 @@ const DOCS = [
     id: "vb09", no: 9, group: "g3", priority: 3, icon: UserCheck,
     name: "NĐ 170/2025 & NĐ 300/2026 (tuyển dụng, sử dụng công chức)",
     ref: "VBHN 10/2026/VBHN-NĐ-BNV · NĐ 300 hiệu lực 01/8/2026",
+    video: { file: "nd-170-2025-tuyen-dung-cong-chuc-nhat-phong.mp4", length: "9:15" },
     focus: [
       "Điều kiện dự tuyển, xét tuyển, ưu tiên (Điều 4–6).",
       "Thi tuyển chuyên viên: Vòng 1 trắc nghiệm máy 60 câu, 60 phút, đúng từ 50%; Vòng 2 nghiệp vụ chuyên ngành (Điều 9).",
@@ -146,6 +154,7 @@ const DOCS = [
     id: "vb10", no: 10, group: "g3", priority: 2, icon: ShieldAlert,
     name: "NĐ 172/2025 & NĐ 251/2025 (kỷ luật CBCC)",
     ref: "VBHN 01/VBHN-BNV ngày 10/11/2025",
+    video: { file: "xu-ly-ky-luat-cbcc-nd172-nhat-phong.mp4", length: "6:47" },
     focus: [
       "Nguyên tắc: mỗi hành vi chỉ xử lý một lần; không thay kỷ luật bằng xử phạt hành chính (Điều 2).",
       "Chưa xem xét, loại trừ, miễn kỷ luật (Điều 3, 4); thời hiệu 05/10 năm (Điều 5).",
@@ -158,6 +167,7 @@ const DOCS = [
     id: "vb11", no: 11, group: "g3", priority: 2, icon: GraduationCap,
     name: "NĐ 171/2025 (đào tạo, bồi dưỡng công chức)",
     ref: "Văn bản gốc, 30/6/2025",
+    video: { file: "dao-tao-boi-duong-cong-chuc-nd171-nhat-phong.mp4", length: "5:58" },
     focus: [
       "Nguyên tắc; trách nhiệm của công chức khi tham gia (Điều 2, 3).",
       "Cử đi đào tạo sau đại học: đủ 03 năm công tác, 02 năm liền kề hoàn thành tốt, không quá 45 tuổi, cam kết phục vụ gấp 03 lần thời gian đào tạo (Điều 4, 5).",
@@ -169,6 +179,7 @@ const DOCS = [
     id: "vb12", no: 12, group: "g4", priority: 3, icon: FileText,
     name: "Luật Ban hành VBQPPL 2025",
     ref: "Luật 64/2025, sửa đổi bởi Luật 87/2025 · VBHN 54/VBHN-VPQH",
+    video: { file: "luat-ban-hanh-vbqppl-2025-nhat-phong.mp4", length: "8:24" },
     focus: [
       "Khái niệm; hệ thống 15 loại văn bản (Điều 2–4); nguyên tắc (Điều 5).",
       "Thẩm quyền, hình thức từng loại văn bản (Điều 10–22).",
@@ -181,6 +192,7 @@ const DOCS = [
     id: "vb13", no: 13, group: "g4", priority: 2, icon: Workflow,
     name: "NQ 76/NQ-CP (CCHC 2021–2030)",
     ref: "Chương trình tổng thể cải cách hành chính nhà nước · 15/7/2021",
+    video: { file: "cai-cach-hanh-chinh-nq76-nhat-phong.mp4", length: "7:00" },
     focus: [
       "05 quan điểm chỉ đạo (mục I).",
       "Mục tiêu: nền hành chính dân chủ, chuyên nghiệp, hiện đại, tinh gọn, hiệu lực, hiệu quả, liêm chính, phục vụ nhân dân (mục II).",
@@ -192,6 +204,7 @@ const DOCS = [
     id: "vb14", no: 14, group: "g5", priority: 1, icon: HardHat,
     name: "Bộ luật Lao động 2019",
     ref: "Luật 45/2019/QH14 · VBHN 18/VBHN-VPQH ngày 12/02/2026",
+    video: { file: "bo-luat-lao-dong-2019-nhat-phong.mp4", length: "6:00" },
     focus: [
       "Hợp đồng lao động: không xác định thời hạn; xác định thời hạn không quá 36 tháng (Điều 20); thử việc (Điều 24).",
       "Chấm dứt, đơn phương chấm dứt hợp đồng (Điều 34–41).",
@@ -209,6 +222,12 @@ export const KTC_DOCS = DOCS.map((d) => ({
   keyFiles: KEY_PAGES[d.id] || [],
   keyCards: KEY_COUNTS[d.id] || 0,
 }));
+
+// Video ôn tập liên văn bản (không gắn với một văn bản riêng).
+export const REVIEW_VIDEOS = [
+  { id: "so-sanh-de-nham", title: "So sánh dễ nhầm", file: "so-sanh-de-nham-nhat-phong.mp4", length: "5:29",
+    sub: "Con số, thuật ngữ giống nhau giữa các văn bản" },
+];
 
 export const KTC_MOCK_ID = "thi-thu-vong1";
 export const MOCK_EXAM = { questions: 60, minutes: 60, passRatio: 0.5 };
