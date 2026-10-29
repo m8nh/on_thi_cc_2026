@@ -18,7 +18,7 @@ export default function SettingsView({ progress, onBack, onSubmit }) {
     try {
       await importProgressFile(file);
       window.location.reload();
-    } catch (err) {
+    } catch {
       setMsg("Không đọc được tệp này. Hãy chọn đúng tệp đã xuất từ Trilha do Aprovado.");
     }
   };

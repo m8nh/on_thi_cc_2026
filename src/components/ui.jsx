@@ -1,6 +1,7 @@
 import { ArrowLeft, CheckCircle2, ChevronRight } from "lucide-react";
 import { COLORS, LIGHT, displayFont, monoFont } from "../theme.js";
 import { backBtnStyle, backBtnLight, lightCardStyle, lightIconBox } from "../styles.js";
+import { materialUrl } from "../lib/materials.js";
 
 export function BackButton({ onClick, light, children }) {
   return (
@@ -96,4 +97,12 @@ export function SectionTitle({ children }) {
 
 export function TextBlock({ children }) {
   return <div style={{ background: COLORS.surface, border: `1px solid ${COLORS.border}`, borderRadius: 12, padding: 14, fontSize: 14, color: COLORS.muted, lineHeight: 1.6, marginBottom: 10 }}>{children}</div>;
+}
+
+// Vídeo de public/materials; só baixa os metadados até apertar play.
+export function VideoPlayer({ file, style }) {
+  return (
+    <video controls preload="metadata" src={materialUrl(file)}
+      style={{ width: "100%", aspectRatio: "16 / 9", borderRadius: 8, background: "#000", display: "block", ...style }} />
+  );
 }

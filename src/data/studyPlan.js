@@ -1,8 +1,8 @@
 import { PlayCircle, FileText, Layers, Scale, BookOpen } from "lucide-react";
 import { INTERVIEW_DOC_URL } from "./interviewData.js";
+import { materialUrl } from "../lib/materials.js";
 import { KTC_GROUPS, KTC_MOCK_ID, MOCK_EXAM, ktcDocsInGroup, ktcQuestionTotal, priorityStars } from "./ktc/vanBan.js";
 
-const MATERIAL_BASE = import.meta.env.BASE_URL;
 
 // "1. NĐ 306/2026 … ★★★ · 180 câu" — văn bản sem ngân hàng mostram "trọng tâm".
 function ktcMaterialLabel(doc) {
@@ -20,7 +20,7 @@ export const STUDY_PLAN = [
     goal: "Nắm cơ chế vận hành, các cơ quan nhà nước, chính quyền 2 cấp, MTTQ và thứ bậc văn bản trước khi học từng luật.",
     subjectId: "nen-tang-he-thong",
     materials: [
-      { type: "video", label: "Video giảng giải (giọng Nhật Phong, 2:42)", url: `${MATERIAL_BASE}materials/ban-do-he-thong-chinh-tri-nhat-phong.mp4` },
+      { type: "video", label: "Video giảng giải (giọng Nhật Phong, 2:42)", url: materialUrl("ban-do-he-thong-chinh-tri-nhat-phong.mp4") },
       { type: "doc", label: "Bài đọc: tóm tắt nhanh + bài chi tiết + bẫy trắc nghiệm", url: "https://claude.ai/artifact/JhM87xXupuVyjMHB2QNCGK" },
       { type: "deck", label: "12 flash card + 12 câu trắc nghiệm", subjectId: "nen-tang-he-thong" },
       { type: "law", label: "Nghị quyết 203/2025/QH15 sửa đổi Hiến pháp", url: "https://thuvienphapluat.vn/van-ban/Bo-may-hanh-chinh/Nghi-quyet-sua-doi-Hien-phap-2013-655275.aspx" },
@@ -32,7 +32,7 @@ export const STUDY_PLAN = [
       id: `k${i + 1}-${g.id}`, phase: "Vòng 1", title: g.title, goal: g.goal,
       subjectId: docs[0].id,
       materials: docs.flatMap((d) => [
-        ...(d.video ? [{ type: "video", label: `Video ${d.name} (giọng Nhật Phong, ${d.video.length})`, url: `${MATERIAL_BASE}materials/${d.video.file}` }] : []),
+        ...(d.video ? [{ type: "video", label: `Video ${d.name} (giọng Nhật Phong, ${d.video.length})`, url: materialUrl(d.video.file) }] : []),
         { type: "deck", label: ktcMaterialLabel(d), subjectId: d.id },
       ]),
     };

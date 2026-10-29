@@ -47,11 +47,11 @@ export default function DashboardView({ progress, actions }) {
         <SearchResults query={searchQuery} results={SEARCHABLE_SUBJECTS.filter((s) => `${s.name} ${s.ref}`.toLowerCase().includes(query))} onOpen={openSubject} />
       ) : (
         <>
-        <AchievementsBoard progress={progress} />
-        <div className="tda-dash-grid">
-          <OverviewColumn progress={progress} actions={actions} />
-          <SubjectsColumn progress={progress} actions={actions} />
-        </div>
+          <AchievementsBoard progress={progress} />
+          <div className="tda-dash-grid">
+            <OverviewColumn progress={progress} actions={actions} />
+            <SubjectsColumn progress={progress} actions={actions} />
+          </div>
         </>
       )}
     </div>

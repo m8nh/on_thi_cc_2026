@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { BookOpen, CalendarDays, ChevronDown, ChevronRight, PlayCircle, Trophy } from "lucide-react";
-import { LIGHT, displayFont, monoFont } from "../../theme.js";
+import { LIGHT, TINT, displayFont, monoFont } from "../../theme.js";
 import { lightCardBlock, lightCardStyle, lightIconBox } from "../../styles.js";
-import { GroupHeading, ProgressBar, SubjectRow } from "../../components/ui.jsx";
+import { GroupHeading, ProgressBar, SubjectRow, VideoPlayer } from "../../components/ui.jsx";
 import { NGHIEP_VU_SUBJECT, WRITING_SUBJECT } from "../../data/subjects.js";
 import { KTC_DOCS, KTC_GROUPS, KTC_MOCK_ID, KTC_TOTAL_QUESTIONS, MOCK_EXAM, ktcDocsInGroup, ktcQuestionTotal, priorityStars, REVIEW_VIDEOS } from "../../data/ktc/vanBan.js";
 import { countSeen, docStats } from "../../lib/ktcBank.js";
@@ -26,7 +26,7 @@ export default function SubjectsColumn({ progress, actions }) {
         <Vong1Tile
           icon={BookOpen} accent={LIGHT.teal} title="Ôn tài liệu" active={showDocs}
           sub={`${KTC_DOCS.length} văn bản · ${seen}/${KTC_TOTAL_QUESTIONS} câu đã làm`}
-          trailing={<ChevronDown size={15} color={LIGHT.muted} style={{ transform: showDocs ? "rotate(180deg)" : "none", transition: "transform .2s" }} />}
+          trailing={<ExpandChevron open={showDocs} />}
           onClick={() => setShowDocs((v) => !v)}
         />
       </div>
@@ -35,11 +35,11 @@ export default function SubjectsColumn({ progress, actions }) {
           <Vong1Tile
             icon={PlayCircle} accent={LIGHT.gold} title={`Video ôn tập · ${v.title}`} active={openVideo === v.id}
             sub={`${v.length} · ${v.sub}`}
-            trailing={<ChevronDown size={15} color={LIGHT.muted} style={{ transform: openVideo === v.id ? "rotate(180deg)" : "none", transition: "transform .2s" }} />}
+            trailing={<ExpandChevron open={openVideo === v.id} />}
             onClick={() => setOpenVideo((cur) => (cur === v.id ? null : v.id))}
           />
           {openVideo === v.id && (
-            <video controls preload="metadata" src={`${import.meta.env.BASE_URL}materials/${v.file}`} style={{ width: "100%", aspectRatio: "16 / 9", borderRadius: 8, background: "#000", display: "block", marginTop: 8 }} />
+            <VideoPlayer file={v.file} style={{ marginTop: 8 }} />
           )}
         </div>
       ))}
@@ -61,6 +61,10 @@ export default function SubjectsColumn({ progress, actions }) {
   );
 }
 
+const ExpandChevron = ({ open }) => (
+  <ChevronDown size={15} color={LIGHT.muted} style={{ transform: open ? "rotate(180deg)" : "none", transition: "transform .2s" }} />
+);
+
 // Ô lớn của Vòng 1 (Thi thử / Ôn tài liệu).
 function Vong1Tile({ icon: Icon, accent, title, sub, onClick, active, trailing }) {
   return (
@@ -69,7 +73,7 @@ function Vong1Tile({ icon: Icon, accent, title, sub, onClick, active, trailing }
       textAlign: "left", cursor: "pointer", color: LIGHT.text, border: `1px solid ${active ? accent : LIGHT.border}`,
     }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
-        <div style={{ ...lightIconBox, background: accent === LIGHT.gold ? LIGHT.goldSoft : "rgba(46,154,118,0.12)" }}><Icon size={17} color={accent} /></div>
+        <div style={{ ...lightIconBox, background: accent === LIGHT.gold ? LIGHT.goldSoft : TINT.teal }}><Icon size={17} color={accent} /></div>
         {trailing ?? <ChevronRight size={15} color={LIGHT.muted} />}
       </div>
       <div>

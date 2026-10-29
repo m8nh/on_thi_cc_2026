@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { COLORS, FONT_IMPORT, LIGHT, RESPONSIVE_CSS, bodyFont } from "./theme.js";
 import { BackButton } from "./components/ui.jsx";
+import { lightPagePadding } from "./styles.js";
 import DarkHeader from "./components/DarkHeader.jsx";
 import { INTERVIEW_SUBJECT_ID, WRITING_SUBJECT, findDeckSubject } from "./data/subjects.js";
 import { applySessionXp, loadProgress, pendingMissionReward, recordMissionSession, rolloverMissions, saveProgress, touchSubject } from "./lib/progress.js";
@@ -24,9 +25,9 @@ import KtcGocView from "./views/ktc/KtcGocView.jsx";
 import { KTC_MOCK_ID, MOCK_EXAM, findKtcDoc } from "./data/ktc/vanBan.js";
 import { buildMockExam, cardsOf, loadKeyCards, pickCards, pickRound, recordAnswers, recordCards } from "./lib/ktcBank.js";
 
-// Telas no tema claro (largas); as demais usam o tema escuro centralizado.
-const LIGHT_VIEWS = new Set(["track", "hai-quan", "dashboard", "plan", "interview"]);
-// Telas escuras de estudo, que mostram o cabeçalho com nível/XP.
+// Telas que montam o próprio layout (padding, cabeçalho, botão voltar).
+const SELF_LAYOUT_VIEWS = new Set(["track", "hai-quan", "dashboard", "plan", "interview"]);
+// Telas de estudo, que mostram o cabeçalho com nível/XP.
 const STUDY_VIEWS = new Set([
   "subject", "flashcards", "quiz", "writing", "reward",
   "ktc-subject", "ktc-quiz", "ktc-cards", "ktc-loading", "ktc-key", "ktc-goc",
@@ -89,7 +90,7 @@ export default function App() {
   const finishKtcQuiz = (results, xp, meta) => {
     const isExam = ktcSession.mode === "exam";
     const passed = isExam && meta.quizTotal > 0 && meta.quizCorrect / meta.quizTotal >= MOCK_EXAM.passRatio;
-    const patch = { qStats: recordAnswers(progress.qStats, results), mockExamsPassed: (progress.mockExamsPassed || 0) + (passed ? 1 : 0) };
+    const patch = { qStats: recordAnswers(progress.qStats, results), mockExamsPassed: progress.mockExamsPassed + (passed ? 1 : 0) };
     awardXp(xp, { kind: "quiz", ...meta, patch }, isExam ? "dashboard" : "ktc-subject");
   };
   const finishKtcCards = (xp, meta) => {
@@ -131,9 +132,9 @@ export default function App() {
     const { missionProgress: mp, missionStreak } = rolloverMissions(progress);
     const missionProgress = recordMissionSession(mp, { kind, cardsReviewed, quizCorrect, quizTotal, xp: amount });
     const p = { ...progress, ...patch, missionProgress, missionStreak };
-    if (kind === "writing") p.writingsDone = (p.writingsDone || 0) + 1;
     finishSession({
       ...p,
+      writingsDone: p.writingsDone + (kind === "writing" ? 1 : 0),
       totalCardsReviewed: p.totalCardsReviewed + cardsReviewed,
       quizStats: quizTotal ? { correct: p.quizStats.correct + quizCorrect, total: p.quizStats.total + quizTotal } : p.quizStats,
     }, amount, returnTo);
@@ -144,6 +145,7 @@ export default function App() {
     const { missionProgress, missionStreak } = rolloverMissions(progress);
     const { pending, xp, reachesStreak } = pendingMissionReward(missionProgress, missionStreak);
     if (!pending.length) return;
+    const nextStreak = missionStreak + (reachesStreak ? 1 : 0);
     finishSession({
       ...progress,
       missionProgress: {
@@ -151,8 +153,8 @@ export default function App() {
         claimedIds: [...missionProgress.claimedIds, ...pending.map((m) => m.id)],
         streakCounted: missionProgress.streakCounted || reachesStreak,
       },
-      missionStreak: missionStreak + (reachesStreak ? 1 : 0),
-      bestMissionStreak: Math.max(progress.bestMissionStreak || 0, missionStreak + (reachesStreak ? 1 : 0)),
+      missionStreak: nextStreak,
+      bestMissionStreak: Math.max(progress.bestMissionStreak, nextStreak),
     }, xp, "dashboard");
   };
 
@@ -225,7 +227,6 @@ export default function App() {
     }
   };
 
-  const isLight = LIGHT_VIEWS.has(view);
   const backTo = {
     subject: ["dashboard", "Lộ trình"],
     writing: ["dashboard", "Lộ trình"],
@@ -242,18 +243,13 @@ export default function App() {
     <div
       className="tda-root tda-wide"
       style={{
-        ...bodyFont,
-        background: LIGHT.bg,
-        color: LIGHT.text,
-        borderRadius: 20,
-        padding: 0,
-        maxWidth: 1440,
+        ...bodyFont, background: LIGHT.bg, color: LIGHT.text, borderRadius: 20, maxWidth: 1440,
         margin: "0 auto", minHeight: "100vh", boxSizing: "border-box", position: "relative", overflow: "hidden",
       }}
     >
       <style>{FONT_IMPORT + RESPONSIVE_CSS}</style>
-      {isLight ? renderView() : (
-        <div style={{ padding: "18px 16px 28px" }}>
+      {SELF_LAYOUT_VIEWS.has(view) ? renderView() : (
+        <div style={lightPagePadding}>
           {STUDY_VIEWS.has(view) && <DarkHeader progress={progress} />}
           {backTo && <BackButton onClick={() => setView(backTo[0])}>{backTo[1]}</BackButton>}
           {renderView()}
@@ -263,10 +259,3 @@ export default function App() {
   );
 }
 
-function BackgroundRings() {
-  return (
-    <svg width="100%" height="100%" viewBox="0 0 560 560" style={{ position: "absolute", inset: 0, opacity: 0.06, pointerEvents: "none" }}>
-      {[80, 140, 210, 290, 370, 450].map((r) => <circle key={r} cx="480" cy="60" r={r} fill="none" stroke={COLORS.gold} strokeWidth="1" />)}
-    </svg>
-  );
-}

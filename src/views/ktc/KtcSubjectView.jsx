@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { BookOpen, ChevronDown, ChevronRight, KeyRound, Layers, RotateCcw, ListTree, FileImage, FileText, PlayCircle } from "lucide-react";
 import { COLORS, displayFont, monoFont } from "../../theme.js";
 import { iconBoxStyle, subjectCardStyle, darkPanelStyle } from "../../styles.js";
-import { ProgressBar } from "../../components/ui.jsx";
+import { ProgressBar, VideoPlayer } from "../../components/ui.jsx";
 import { ktcQuestionTotal, priorityStars } from "../../data/ktc/vanBan.js";
 import { ROUND_SIZE, cardsOf, countWrong, docStats, hasGoc, loadBank, sectionsOf } from "../../lib/ktcBank.js";
 
@@ -59,7 +59,7 @@ export default function KtcSubjectView({ doc, progress, onStart }) {
           <ModeCard icon={PlayCircle} title="Video giảng giải" sub={`${doc.video.length} · giọng Nhật Phong · xem trước khi đọc văn bản`} onClick={() => setShowVideo((v) => !v)} open={showVideo} />
           {showVideo && (
             <div style={{ ...darkPanelStyle, margin: "-4px 0 14px", padding: 10 }}>
-              <video controls preload="metadata" src={`${import.meta.env.BASE_URL}materials/${doc.video.file}`} style={{ width: "100%", aspectRatio: "16 / 9", borderRadius: 8, background: "#000", display: "block" }} />
+              <VideoPlayer file={doc.video.file} />
             </div>
           )}
         </>

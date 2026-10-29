@@ -12,13 +12,16 @@ import { KTC_DOCS, MOCK_EXAM } from "../data/ktc/vanBan.js";
 
 export const ROUND_SIZE = 20;
 
-// Carrega `${dir}/${docId}.json` uma única vez; văn bản sem arquivo devolve [].
-function lazyJsonLoader(modules, dir) {
+// Carrega `${dir}/${docId}.json` uma única vez (passando por `transform`);
+// văn bản sem arquivo devolve [].
+function lazyJsonLoader(modules, dir, transform = (data) => data) {
   const cache = {};
-  return async (docId) => {
-    if (!cache[docId]) cache[docId] = (await modules[`${dir}/${docId}.json`]?.()) ?? [];
+  const load = async (docId) => {
+    if (!cache[docId]) cache[docId] = transform((await modules[`${dir}/${docId}.json`]?.()) ?? []);
     return cache[docId];
   };
+  load.has = (docId) => `${dir}/${docId}.json` in modules;
+  return load;
 }
 
 export const loadBank = lazyJsonLoader(
@@ -142,18 +145,17 @@ export async function buildMockExam() {
 /* ---------- Văn bản gốc (toàn văn luật, nghị định) ----------
    Um JSON por văn bản: [{ id, label, level (0 mở đầu · 1 chương/phần · 2 mục · 3 điều), html }].
    Văn bản quy phạm pháp luật không được bảo hộ quyền tác giả, nên ficam no git. */
-const GOC_LOADERS = import.meta.glob("../data/ktc/goc/*.json", { import: "default" });
-const gocCache = {};
-
-export const hasGoc = (docId) => !!GOC_LOADERS[`../data/ktc/goc/${docId}.json`];
-
-export async function loadGoc(docId) {
-  if (gocCache[docId]) return gocCache[docId];
-  const loader = GOC_LOADERS[`../data/ktc/goc/${docId}.json`];
-  const sections = loader ? await loader() : [];
-  gocCache[docId] = sections.map((s) => ({ ...s, plain: foldVi(s.html.replace(/<[^>]+>/g, " ")) }));
-  return gocCache[docId];
-}
 
 // Bỏ dấu tiếng Việt để tìm kiếm không phân biệt dấu.
-export const foldVi = (s) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D").toLowerCase().replace(/\s+/g, " ");
+export const foldVi = (s) => s
+  .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+  .replace(/đ/g, "d").replace(/Đ/g, "D")
+  .toLowerCase().replace(/\s+/g, " ");
+
+// `plain`: texto sem HTML e sem dấu, usado na busca.
+export const loadGoc = lazyJsonLoader(
+  import.meta.glob("../data/ktc/goc/*.json", { import: "default" }),
+  "../data/ktc/goc",
+  (sections) => sections.map((s) => ({ ...s, plain: foldVi(s.html.replace(/<[^>]+>/g, " ")) })),
+);
+export const hasGoc = loadGoc.has;
