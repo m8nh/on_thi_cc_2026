@@ -5,6 +5,7 @@ import { lightCardBlock, lightCardStyle, lightIconBox } from "../../styles.js";
 import { GroupHeading, ProgressBar, SubjectRow, VideoPlayer } from "../../components/ui.jsx";
 import { NGHIEP_VU_SUBJECT, WRITING_SUBJECT } from "../../data/subjects.js";
 import { KTC_DOCS, KTC_GROUPS, KTC_MOCK_ID, KTC_TOTAL_QUESTIONS, MOCK_EXAM, ktcDocsInGroup, ktcQuestionTotal, priorityStars, REVIEW_VIDEOS } from "../../data/ktc/vanBan.js";
+import { V2_SUBJECTS } from "../../data/vong2.js";
 import { countSeen, docStats } from "../../lib/ktcBank.js";
 import { WEEKDAYS_VI, buildCalendarGrid, toDateKey } from "../../lib/dates.js";
 
@@ -55,6 +56,7 @@ export default function SubjectsColumn({ progress, actions }) {
       <GroupHeading style={headingStyle}>Vòng 2 · Kỹ năng ngôn ngữ</GroupHeading>
       <SubjectRow subject={WRITING_SUBJECT} onClick={actions.openWriting} />
       <SubjectRow subject={NGHIEP_VU_SUBJECT} onClick={() => actions.openDeck(NGHIEP_VU_SUBJECT.id)} />
+      {V2_SUBJECTS.map((s) => <SubjectRow key={s.view} subject={s} onClick={() => actions.navigate(s.view)} />)}
 
       <MiniCalendar sessionDates={progress.sessionDates} />
     </div>

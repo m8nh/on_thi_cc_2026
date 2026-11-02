@@ -4,5 +4,6 @@ dist/
 
 # Tài liệu ôn thi (ngân hàng câu hỏi, KEY) — không đưa lên GitHub
 src/data/ktc/banks/
+src/data/vong2/
 _to_delete/
 public/key/

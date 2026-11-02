@@ -24,6 +24,12 @@ import KtcKeyView from "./views/ktc/KtcKeyView.jsx";
 import KtcGocView from "./views/ktc/KtcGocView.jsx";
 import { KTC_MOCK_ID, MOCK_EXAM, findKtcDoc } from "./data/ktc/vanBan.js";
 import { buildMockExam, cardsOf, loadKeyCards, pickCards, pickRound, recordAnswers, recordCards } from "./lib/ktcBank.js";
+import TemasView from "./views/vong2/TemasView.jsx";
+import DichView from "./views/vong2/DichView.jsx";
+import PhongVanView from "./views/vong2/PhongVanView.jsx";
+import DeCuongView from "./views/vong2/DeCuongView.jsx";
+import { PRACTICE_XP } from "./data/vong2.js";
+import { todayKey } from "./lib/dates.js";
 
 // Telas que montam o próprio layout (padding, cabeçalho, botão voltar).
 const SELF_LAYOUT_VIEWS = new Set(["track", "hai-quan", "dashboard", "plan", "interview"]);
@@ -31,6 +37,7 @@ const SELF_LAYOUT_VIEWS = new Set(["track", "hai-quan", "dashboard", "plan", "in
 const STUDY_VIEWS = new Set([
   "subject", "flashcards", "quiz", "writing", "reward",
   "ktc-subject", "ktc-quiz", "ktc-cards", "ktc-loading", "ktc-key", "ktc-goc",
+  "v2-temas", "v2-dich", "v2-phongvan", "v2-decuong",
 ]);
 
 const INITIAL_INTERVIEW_UI = { tab: "ban-do", filter: "all", deck: "all", prepMin: 5, talkMin: 5 };
@@ -42,6 +49,7 @@ export default function App() {
   const [reward, setReward] = useState(null); // { xp, leveledUp, tip, returnTo }
   const [interviewUi, setInterviewUi] = useState(INITIAL_INTERVIEW_UI);
   const [ktcSession, setKtcSession] = useState(null); // { mode, items | cards }
+  const [writingTopic, setWritingTopic] = useState(null); // đề do banco Vòng 2 aberto na redação
 
   useEffect(() => { saveProgress(progress); }, [progress]);
 
@@ -98,6 +106,12 @@ export default function App() {
   };
   const openWriting = () => {
     setProgress((p) => touchSubject(p, WRITING_SUBJECT.id));
+    setWritingTopic(null);
+    setView("writing");
+  };
+  const openTopicWriting = (topic) => {
+    setProgress((p) => touchSubject(p, WRITING_SUBJECT.id));
+    setWritingTopic(topic);
     setView("writing");
   };
   const openInterview = () => {
@@ -156,6 +170,20 @@ export default function App() {
       missionStreak: nextStreak,
       bestMissionStreak: Math.max(progress.bestMissionStreak, nextStreak),
     }, xp, "dashboard");
+  };
+
+  // "Đã luyện" de um cartão do Vòng 2: conta sem sair do baralho; XP só na 1ª vez do dia por cartão.
+  const practiceCard = (id) => {
+    const today = todayKey();
+    const log = progress.v2Practice[id];
+    const v2Practice = { ...progress.v2Practice, [id]: { count: (log?.count || 0) + 1, last: today } };
+    if (log?.last === today) { setProgress({ ...progress, v2Practice }); return; }
+    const { missionProgress: mp, missionStreak } = rolloverMissions(progress);
+    const missionProgress = recordMissionSession(mp, { kind: "interview", cardsReviewed: 1, xp: PRACTICE_XP });
+    setProgress(applySessionXp({
+      ...progress, v2Practice, missionProgress, missionStreak,
+      totalCardsReviewed: progress.totalCardsReviewed + 1,
+    }, PRACTICE_XP).next);
   };
 
   /* ---------- Render ---------- */
@@ -219,7 +247,23 @@ export default function App() {
       case "quiz":
         return subject && <QuizView subject={subject} onComplete={awardXp} />;
       case "writing":
-        return <WritingView progress={progress} setProgress={setProgress} onComplete={awardXp} />;
+        return (
+          <WritingView
+            key={writingTopic?.id || "exam"}
+            topic={writingTopic}
+            progress={progress}
+            setProgress={setProgress}
+            onComplete={(xp, meta) => awardXp(xp, meta, writingTopic ? "v2-temas" : "dashboard")}
+          />
+        );
+      case "v2-temas":
+        return <TemasView topicDrafts={progress.topicDrafts} onWrite={openTopicWriting} />;
+      case "v2-dich":
+        return <DichView drafts={progress.translationDrafts} setProgress={setProgress} />;
+      case "v2-phongvan":
+        return <PhongVanView practice={progress.v2Practice} onPractice={practiceCard} />;
+      case "v2-decuong":
+        return <DeCuongView done={progress.deCuongDone} setProgress={setProgress} />;
       case "reward":
         return reward && <RewardView reward={reward} onContinue={() => setView(reward.returnTo)} />;
       default:
@@ -229,7 +273,11 @@ export default function App() {
 
   const backTo = {
     subject: ["dashboard", "Lộ trình"],
-    writing: ["dashboard", "Lộ trình"],
+    writing: writingTopic ? ["v2-temas", "Đề luận & Tình huống"] : ["dashboard", "Lộ trình"],
+    "v2-temas": ["dashboard", "Trang chủ"],
+    "v2-dich": ["dashboard", "Trang chủ"],
+    "v2-phongvan": ["dashboard", "Trang chủ"],
+    "v2-decuong": ["dashboard", "Trang chủ"],
     flashcards: ["subject", subject?.name],
     quiz: ["subject", subject?.name],
     "ktc-subject": ["dashboard", "Lộ trình"],

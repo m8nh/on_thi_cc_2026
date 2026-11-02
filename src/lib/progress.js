@@ -10,6 +10,7 @@ export const DEFAULT_PROGRESS = {
   level: 1, xp: 0, streakDays: 1, lastActiveDate: null,
   tipsSeen: [], totalSessions: 0, sessionDates: [],
   writingDraft: null,
+  topicDrafts: {}, translationDrafts: {}, v2Practice: {}, deCuongDone: {},
   missionProgress: null, missionStreak: 0,
   dailyXp: {}, subjectsEverTouched: [], totalCardsReviewed: 0,
   quizStats: { correct: 0, total: 0 },

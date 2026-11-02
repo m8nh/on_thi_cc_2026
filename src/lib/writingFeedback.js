@@ -19,14 +19,26 @@ ${orEmpty(translationPt)}
 Hãy nhận xét ngắn gọn từng phần bằng tiếng Việt, nêu điểm mạnh, điểm cần cải thiện, và ước tính điểm mỗi phần cùng tổng điểm ước tính trên ${WRITING_SUBJECT.maxScore}. Ghi rõ đây chỉ là ước tính tham khảo.`;
 }
 
+function buildTopicPrompt({ essay }, topic) {
+  return `Bạn là giám khảo chấm bài luận chuyên ngành (vòng 2) cho kỳ thi công chức ngoại giao Việt Nam.
+
+Đề bài:
+${topic.enunciado.join("\n")}
+
+Bài làm của thí sinh:
+${orEmpty(essay)}
+
+Hãy nhận xét ngắn gọn bằng tiếng Việt về nội dung, lập luận, lập trường, thuật ngữ đối ngoại và văn phong; nêu điểm mạnh và điểm cần cải thiện. Ghi rõ đây chỉ là ước tính tham khảo.`;
+}
+
 // Nota: chamada direta à API da Anthropic. Só funciona dentro do preview
 // de artifacts do Claude.ai (que injeta a autenticação). Rodando local via
 // `npm run dev`, essa chamada falha e o app cai no checklist de autoavaliação.
-export async function requestWritingFeedback(draft) {
+export async function requestWritingFeedback(draft, topic) {
   const response = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 1000, messages: [{ role: "user", content: buildPrompt(draft) }] }),
+    body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 1000, messages: [{ role: "user", content: topic ? buildTopicPrompt(draft, topic) : buildPrompt(draft) }] }),
   });
   const data = await response.json();
   const text = (data.content || []).filter((b) => b.type === "text").map((b) => b.text).join("\n");
